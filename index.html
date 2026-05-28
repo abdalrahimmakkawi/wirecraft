@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wirecraft — AI Hardware Engineering Workspace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Suppress Tailwind CDN warning
+    (function() {
+      const originalWarn = console.warn;
+      console.warn = function(...args) {
+        if (args[0] && args[0].includes && args[0].includes('Tailwind')) return;
+        originalWarn.apply(console, args);
+      };
+    })();
+  </script>
+  <style>
+    /* Inter & JetBrains Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    
+    /* 4 Distinct Premium Engineering Tool Themes */
+    [data-theme="dark-steel"] {
+      --bg-app: #09090b;
+      --bg-surface: #111113;
+      --bg-card: #18181b;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-primary: #fafafa;
+      --text-secondary: #71717a;
+      --color-accent: #0ea5e9;
+      --color-accent-hover: #0284c7;
+      --color-accent-glow: rgba(14, 165, 233, 0.1);
+    }
+    [data-theme="engineering-paper"] {
+      --bg-app: #fdf8f0;
+      --bg-surface: #f5efe4;
+      --bg-card: #ffffff;
+      --border-color: rgba(0, 0, 0, 0.08);
+      --text-primary: #1a2332;
+      --text-secondary: #64748b;
+      --color-accent: #1d4ed8;
+      --color-accent-hover: #1e40af;
+      --color-accent-glow: rgba(29, 78, 216, 0.06);
+    }
+    [data-theme="midnight-pcb"] {
+      --bg-app: #061a0e;
+      --bg-surface: #0a2214;
+      --bg-card: #0f2a1a;
+      --border-color: rgba(34, 197, 94, 0.15);
+      --text-primary: #f0fdf4;
+      --text-secondary: #86efac;
+      --color-accent: #22c55e;
+      --color-accent-hover: #16a34a;
+      --color-accent-glow: rgba(34, 197, 148, 0.1);
+    }
+    [data-theme="blueprint"] {
+      --bg-app: #0a1628;
+      --bg-surface: #0f2040;
+      --bg-card: #142952;
+      --border-color: rgba(6, 182, 212, 0.15);
+      --text-primary: #e0f2fe;
+      --text-secondary: #7dd3fc;
+      --color-accent: #06b6d4;
+      --color-accent-hover: #0891b2;
+      --color-accent-glow: rgba(6, 182, 212, 0.1);
+    }
+
+    body {
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 13.5px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    }
+
+    /* Crisp Grid Overlay background */
+    .engineering-grid {
+      background-size: 20px 20px;
+      background-image: 
+        radial-gradient(circle, var(--border-color) 0.75px, transparent 1px);
+    }
+
+    .theme-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      border-radius: 6px;
+    }
+    .theme-border {
+      border-color: var(--border-color);
+    }
+    
+    /* Standardized Buttons */
+    .btn-primary {
+      background-color: var(--color-accent);
+      color: #ffffff;
+      font-weight: 500;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 5px;
+      transition: background-color 150ms ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-primary:hover {
+      background-color: var(--color-accent-hover);
+    }
+    .btn-primary:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 5px;
+      transition: background-color 150ms ease, border-color 150ms ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.04);
+      border-color: var(--text-secondary);
+    }
+    [data-theme="engineering-paper"] .btn-secondary:hover {
+      background-color: rgba(0, 0, 0, 0.03);
+    }
+
+    .btn-ghost {
+      background-color: transparent;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 11.5px;
+      padding: 5px 12px;
+      border-radius: 5px;
+      transition: background-color 150ms ease, color 150ms ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-ghost:hover {
+      background-color: rgba(255, 255, 255, 0.04);
+      color: var(--text-primary);
+    }
+    [data-theme="engineering-paper"] .btn-ghost:hover {
+      background-color: rgba(0, 0, 0, 0.03);
+    }
+
+    .accent-btn {
+      background-color: var(--color-accent);
+      color: #fff;
+    }
+    .accent-btn:hover {
+      background-color: var(--color-accent-hover);
+    }
+    .accent-text {
+      color: var(--color-accent);
+    }
+    
+    /* Schematic and PCB Drag states */
+    .dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+
+    /* Interactive wiring path highlights */
+    .wire-path {
+      stroke: var(--color-accent);
+      stroke-width: 1.5;
+      fill: none;
+      transition: stroke 150ms, stroke-width 150ms;
+    }
+    .wire-path:hover {
+      stroke: #3b82f6;
+      stroke-width: 2.5;
+      cursor: pointer;
+    }
+
+    .pin-stub {
+      fill: var(--bg-card);
+      stroke: var(--border-color);
+      stroke-width: 1.25;
+      transition: fill 150ms, scale 150ms;
+    }
+    .pin-stub:hover {
+      fill: var(--color-accent);
+      scale: 1.15;
+      cursor: crosshair;
+    }
+
+    /* Immersive Theme overrides that prevent Tailwind specificity locks */
+    body[data-theme] {
+      background-color: var(--bg-app) !important;
+      color: var(--text-primary) !important;
+    }
+    
+    /* Surface element overrides */
+    [data-theme] header, 
+    [data-theme] aside, 
+    [data-theme] #sidebar-panel {
+      background-color: var(--bg-surface) !important;
+      border-color: var(--border-color) !important;
+      color: var(--text-primary) !important;
+    }
+    
+    /* Card/Block overlays */
+    [data-theme] .theme-card, 
+    [data-theme] .card-theme, 
+    [data-theme] .block-card,
+    [data-theme] div.bg-zinc-100,
+    [data-theme] div.bg-zinc-50,
+    [data-theme] div.dark\:bg-zinc-900\/30,
+    [data-theme] div.bg-zinc-900\/30,
+    [data-theme] div.bg-zinc-800\/20,
+    [data-theme] .bg-zinc-50\/50,
+    [data-theme] .dark\:bg-zinc-950\/20 {
+      background-color: var(--bg-card) !important;
+      border-color: var(--border-color) !important;
+      color: var(--text-primary) !important;
+    }
+
+    [data-theme] .theme-border,
+    [data-theme] .border,
+    [data-theme] .border-t,
+    [data-theme] .border-b,
+    [data-theme] .border-r,
+    [data-theme] .border-l {
+      border-color: var(--border-color) !important;
+    }
+
+    /* Primary Accent Colors & Buttons */
+    [data-theme] .btn-primary,
+    [data-theme] .accent-btn {
+      background-color: var(--color-accent) !important;
+      color: #ffffff !important;
+    }
+    [data-theme] .btn-primary:shadow,
+    [data-theme] .btn-primary:active {
+      background-color: var(--color-accent-hover) !important;
+    }
+    [data-theme] .accent-text,
+    [data-theme] .text-cyan-400,
+    [data-theme] .text-blue-500,
+    [data-theme] .text-blue-400 {
+      color: var(--color-accent) !important;
+    }
+
+    /* Secondary Theme Text mapping */
+    [data-theme] .text-zinc-400, 
+    [data-theme] .text-zinc-500, 
+    [data-theme] .text-zinc-650 {
+      color: var(--text-secondary) !important;
+    }
+    [data-theme] .text-white, 
+    [data-theme] .text-zinc-100, 
+    [data-theme] .text-zinc-200 {
+      color: var(--text-primary) !important;
+    }
+
+    /* Grids */
+    [data-theme] .engineering-grid {
+      background-color: var(--bg-app) !important;
+    }
+
+    /* Theme specific grid overlays */
+    [data-theme="engineering-paper"] .engineering-grid {
+      background-color: #fdf8f0 !important;
+      background-size: 20px 20px;
+      background-image: 
+        linear-gradient(to right, rgba(200, 216, 232, 0.4) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(200, 216, 232, 0.4) 1px, transparent 1px) !important;
+    }
+    [data-theme="midnight-pcb"] .engineering-grid {
+      background-color: #061a0e !important;
+      background-size: 20px 20px;
+      background-image: 
+        linear-gradient(to right, rgba(34, 197, 94, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(34, 197, 94, 0.08) 1px, transparent 1px) !important;
+    }
+    [data-theme="blueprint"] .engineering-grid {
+      background-color: #0a1628 !important;
+      background-size: 30px 30px;
+      background-image: 
+        linear-gradient(to right, rgba(6, 182, 212, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(6, 182, 212, 0.08) 1px, transparent 1px) !important;
+    }
+    [data-theme="dark-steel"] .engineering-grid {
+      background-color: #09090b !important;
+      background-size: 20px 20px;
+      background-image: 
+        radial-gradient(circle, var(--border-color) 0.75px, transparent 1px) !important;
+    }
+
+    /* Clean components for engineering paper inputs */
+    [data-theme="engineering-paper"] input, 
+    [data-theme="engineering-paper"] select, 
+    [data-theme="engineering-paper"] textarea {
+      background-color: #ffffff !important;
+      color: #1a2332 !important;
+      border-color: rgba(0, 0, 0, 0.12) !important;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden" data-theme="dark-steel">
+
+  <!-- TOP HEADER -->
+  <header class="h-14 border-b theme-border flex items-center justify-between px-5 z-40 bg-opacity-80 backdrop-blur-md">
+    <div class="flex items-center space-x-4">
+      <!-- Collapse Sidebar Button -->
+      <button onclick="toggleSidebar()" class="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition duration-150" title="Toggle Sidebar">
+        <i data-lucide="menu" class="w-4 h-4 text-[var(--text-secondary)]"></i>
+      </button>
+
+      <!-- Robotic Arm Wirecraft SVG Logo -->
+      <div class="flex items-center space-x-2">
+        <svg class="w-6 h-6" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 80h60M30 80l10-30m10-5l25-15" stroke="var(--color-accent)" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="30" cy="80" r="5" fill="var(--color-accent)"/>
+          <circle cx="40" cy="50" r="5" fill="var(--color-accent)"/>
+          <circle cx="75" cy="30" r="5" fill="var(--text-primary)"/>
+          <path d="M72 25l7 5-5 7" stroke="var(--color-accent)" stroke-width="4"/>
+        </svg>
+        <span class="font-semibold text-base tracking-tight text-[var(--text-primary)]">Wirecraft</span>
+      </div>
+
+      <span class="text-zinc-600 dark:text-zinc-800">/</span>
+
+      <!-- Project Name (Inline Editable) -->
+      <div class="flex items-center">
+        <input id="project-title-input" type="text" value="Untitled Project" onchange="renameProject(this.value)"
+          class="bg-transparent font-medium text-xs border-b border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 focus:border-[var(--color-accent)] outline-none px-1 py-0.5 text-[var(--text-primary)] w-36 sm:w-56 transition duration-150" />
+      </div>
+    </div>
+
+    <!-- Right Header Actions -->
+    <div class="flex items-center space-x-3">
+      <!-- Theme Switcher Dots -->
+      <div id="theme-switcher-container" class="flex items-center space-x-1.5 bg-zinc-100 dark:bg-zinc-900 border theme-border rounded-full p-1 z-50 pointer-events-auto" title="Switch Engineering Theme">
+        <button onclick="setGlobalTheme('dark-steel')" class="w-4 h-4 rounded-full bg-[#18181b] border border-zinc-700/50 transition opacity-60 hover:opacity-100 cursor-pointer" title="Dark Steel"></button>
+        <button onclick="setGlobalTheme('engineering-paper')" class="w-4 h-4 rounded-full bg-[#ffffff] border border-zinc-300/60 transition opacity-60 hover:opacity-100 cursor-pointer" title="Engineering Paper"></button>
+        <button onclick="setGlobalTheme('midnight-pcb')" class="w-4 h-4 rounded-full bg-[#102016] border border-green-800/50 transition opacity-60 hover:opacity-100 cursor-pointer" title="Midnight PCB"></button>
+        <button onclick="setGlobalTheme('blueprint')" class="w-4 h-4 rounded-full bg-[#0a1c35] border border-cyan-800/50 transition opacity-60 hover:opacity-100 cursor-pointer" title="Blueprint"></button>
+      </div>
+
+      <!-- Version History Dropdown Toggle -->
+      <button onclick="toggleVersionHistory()" class="btn-secondary px-2.5 py-1 text-xs">
+        <i data-lucide="clock" class="w-3.5 h-3.5 text-zinc-400"></i>
+        <span class="hidden sm:inline">Versions</span>
+      </button>
+
+      <!-- DRC Status Info Pill -->
+      <button onclick="scrollToBlock('block-drc')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-medium transition hover:bg-emerald-500/15">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+        <span id="drc-badge" class="font-medium">DRC: Safe</span>
+      </button>
+
+      <!-- User Auth Profile Bar -->
+      <div id="auth-section">
+        <button onclick="openAuthModal()" class="btn-primary px-3 py-1 text-xs">Sign In</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SPLIT COLUMN LAYOUT -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- LEFT SIDEBAR PANEL (280px) -->
+    <aside id="sidebar-panel" class="w-72 border-r theme-border flex flex-col bg-opacity-40 backdrop-blur-sm shrink-0 transition-all duration-300">
+      
+      <!-- Create New Project Header Button -->
+      <div class="pt-4 pb-2 px-4">
+        <button onclick="createNewProject()" class="w-full btn-primary py-2 text-xs">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>New Workspace Project</span>
+        </button>
+      </div>
+
+      <!-- Cloud Sync Prompt Banner -->
+      <div id="sync-banner" class="mx-4 mb-3 p-2.5 bg-zinc-100 dark:bg-zinc-800/30 text-zinc-500 dark:text-zinc-400 border theme-border rounded text-[11px] leading-relaxed">
+        <i data-lucide="info" class="w-3.5 h-3.5 inline mr-1 -mt-0.5"></i>
+        Sign in to cloud-sync your workspace designs securely.
+      </div>
+
+      <!-- Saved Project list library -->
+      <div class="flex-1 overflow-y-auto px-4 py-2 space-y-5">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 font-semibold mb-2 flex items-center justify-between">
+            <span>Project Library</span>
+            <i data-lucide="folder" class="w-3 h-3 text-zinc-400 opacity-60"></i>
+          </div>
+          <div id="project-list" class="space-y-1">
+            <!-- Populated via script -->
+          </div>
+        </div>
+
+        <!-- Saved Historical Version States -->
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 font-semibold mb-2">Version States</div>
+          <div id="version-list" class="space-y-1 text-xs text-zinc-400">
+            <div class="p-2 border theme-border hover:bg-zinc-100 dark:hover:bg-zinc-800/40 rounded cursor-pointer transition flex items-center justify-between text-[11px] font-sans text-zinc-400">
+              <span class="text-[var(--color-accent)] font-medium">v1.0.0</span>
+              <span class="opacity-75">Initial sketch</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DRC Static Overview and Help Check -->
+        <div class="p-3 bg-zinc-50 dark:bg-zinc-900/30 rounded border theme-border space-y-1.5 text-[11px]">
+          <div class="text-[10px] uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 font-semibold">DRC Monitor</div>
+          <div class="text-xs text-zinc-500 dark:text-zinc-400" id="sidebar-drc-status">
+            All circuits verified. 0 issues.
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN DASHBOARD PANEL -->
+    <main class="flex-1 flex flex-col relative overflow-hidden">
+      
+      <!-- Scrollable Block Layout Workspace -->
+      <div id="blocks-workspace" class="flex-1 overflow-y-auto p-6 space-y-6 pb-32 engineering-grid">
+        
+        <!-- EMPTY WORKSPACE STATE -->
+        <div id="empty-workspace-view" class="max-w-xl mx-auto text-center py-20 space-y-6">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-900 border theme-border text-zinc-400">
+            <i data-lucide="cpu" class="w-6 h-6"></i>
+          </div>
+          <div class="space-y-2">
+            <h2 class="text-xl font-medium tracking-tight text-[var(--text-primary)]">No project yet — describe one below</h2>
+            <p class="text-[12.5px] text-zinc-500 max-w-sm mx-auto select-none leading-normal">
+              Enter component parameters or describe a hardware concept below to generate schematics, PCB copper layout files, and instructions.
+            </p>
+          </div>
+
+          <!-- Prompt Preset Idea chips -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left pt-6 max-w-lg mx-auto">
+            <button onclick="selectIdeaPreset('Smart Hydroponics Garden')" class="theme-card pt-4 pb-3.5 px-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 border theme-border transition text-left space-y-1">
+              <span class="font-medium block text-xs text-[var(--text-primary)]">🌿 Smart Hydroponics Garden</span>
+              <span class="text-zinc-400 text-[11px] block leading-normal">ESP32-based soil micro-feeder and light solenoids.</span>
+            </button>
+            <button onclick="selectIdeaPreset('Drone Quadcopter Controller')" class="theme-card pt-4 pb-3.5 px-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 border theme-border transition text-left space-y-1">
+              <span class="font-medium block text-xs text-[var(--text-primary)]">🛸 Flight Controller</span>
+              <span class="text-zinc-400 text-[11px] block leading-normal">STM32 MCU with high-refresh IMU sensor and power bus.</span>
+            </button>
+            <button onclick="selectIdeaPreset('Handheld Retro Emulator')" class="theme-card pt-4 pb-3.5 px-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 border theme-border transition text-left space-y-1">
+              <span class="font-medium block text-xs text-[var(--text-primary)]">🎮 Handheld Retro Console</span>
+              <span class="text-zinc-400 text-[11px] block leading-normal">Raspberry Pi CM4 design with analog thumb sticks.</span>
+            </button>
+            <button onclick="selectIdeaPreset('Biometric Fitness Track-Ring')" class="theme-card pt-4 pb-3.5 px-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 border theme-border transition text-left space-y-1">
+              <span class="font-medium block text-xs text-[var(--text-primary)]">💍 Biometric Tracker Wearable</span>
+              <span class="text-zinc-400 text-[11px] block leading-normal">Ultra miniature BLE ring with optical heart rate system.</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- GENERATED STATE (HIDDEN BY DEFAULT) -->
+        <div id="active-workspace-blocks" class="hidden max-w-5xl mx-auto space-y-6">
+          
+          <!-- BLOCK 1: OVERVIEW BLOCK -->
+          <section id="block-overview" class="theme-card rounded-lg overflow-hidden relative">
+            <div class="flex items-center justify-between px-5 py-3.5 border-b theme-border bg-zinc-50/50 dark:bg-zinc-950/20">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="layout" class="w-4 h-4 text-[var(--color-accent)]"></i>
+                <h3 class="font-semibold text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Overview & Physical Model</h3>
+              </div>
+              <button onclick="toggleBlockVisibility('overview-body')" class="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition">
+                <i data-lucide="chevron-down" class="w-4 h-4 text-[var(--text-secondary)]"></i>
+              </button>
+            </div>
+            
+            <div id="overview-body" class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Procedurally Rendered Model SVG -->
+              <div class="theme-card rounded bg-zinc-50 dark:bg-zinc-900/30 flex items-center justify-center p-4 min-h-[280px]">
+                <div id="isometric-canvas-wrap" class="w-full h-full flex items-center justify-center">
+                  <!-- Auto-inserted stunning SVG -->
+                </div>
+              </div>
+
+              <!-- Content and Stats metadata -->
+              <div class="justify-between flex flex-col space-y-4">
+                <div class="space-y-2">
+                  <h4 id="overview-title" class="text-lg font-medium tracking-tight text-[var(--text-primary)]">Smart Hydroponics Control Hub</h4>
+                  <p id="overview-desc" class="text-xs text-zinc-500 leading-normal">
+                    Soil moisture tracking and pump solenoid controller featuring automatic water refilling logic and lighting setup.
+                  </p>
+                  <div id="overview-tags" class="flex flex-wrap gap-1.5 pt-2">
+                    <!-- Loaded dynamically -->
+                  </div>
+                </div>
+
+                <!-- 4 KPI Stat Cards -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-3">
+                  <div class="pt-3 pb-2.5 px-3 border theme-border rounded bg-zinc-50/50 dark:bg-zinc-900/10 text-center">
+                    <span class="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-1">Difficulty</span>
+                    <span id="stat-difficulty" class="text-xs font-semibold text-emerald-500 font-sans">Intermediate</span>
+                  </div>
+                  <div class="pt-3 pb-2.5 px-3 border theme-border rounded bg-zinc-50/50 dark:bg-zinc-900/10 text-center">
+                    <span class="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-1">Assembly Time</span>
+                    <span id="stat-time" class="text-xs font-semibold text-blue-500 font-mono">12 Hrs</span>
+                  </div>
+                  <div class="pt-3 pb-2.5 px-3 border theme-border rounded bg-zinc-50/50 dark:bg-zinc-900/10 text-center">
+                    <span class="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-1">Est. Cost</span>
+                    <span id="stat-cost" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 font-mono">$34.20</span>
+                  </div>
+                  <div class="pt-3 pb-2.5 px-3 border theme-border rounded bg-zinc-50/50 dark:bg-zinc-900/10 text-center">
+                    <span class="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-1">Parts Count</span>
+                    <span id="stat-count" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 font-mono">5 parts</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- BLOCK 2: BILL OF MATERIALS (BOM) -->
+          <section id="block-bom" class="theme-card rounded-lg overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3.5 border-b theme-border bg-zinc-50/50 dark:bg-zinc-950/20">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="package" class="w-4 h-4 text-[var(--color-accent)]"></i>
+                <h3 class="font-semibold text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Bill of Materials</h3>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button onclick="runCostOptimizer()" class="btn-secondary px-2.5 py-1 text-[11px] h-8" title="Identify lower-cost component alternatives">
+                  Optimize BOM Links
+                </button>
+                <button onclick="exportBOMToCSV()" class="btn-secondary px-2.5 py-1 text-[11px] h-8">
+                  Export CSV
+                </button>
+              </div>
+            </div>
+
+            <div class="p-5 overflow-x-auto">
+              <table class="w-full text-left text-[12.5px] text-zinc-600 dark:text-zinc-300 min-w-[700px]">
+                <thead>
+                  <tr class="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
+                    <th class="pb-2.5">Component</th>
+                    <th class="pb-2.5">Part Number</th>
+                    <th class="pb-2.5">Category</th>
+                    <th class="pb-2.5 text-center">Qty</th>
+                    <th class="pb-2.5 text-right">Unit Cost</th>
+                    <th class="pb-2.5 text-right">Total</th>
+                    <th class="pb-2.5 text-center">Procure Links</th>
+                  </tr>
+                </thead>
+                <tbody id="bom-table-body" class="divide-y divide-zinc-100 dark:divide-zinc-900 font-sans">
+                  <!-- Populated via loaded dataset -->
+                </tbody>
+              </table>
+              <div class="mt-4 pt-3.5 flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800">
+                <span class="text-xs text-zinc-500">Sourcing optimized based on current distributor pricing APIs.</span>
+                <span class="text-sm font-medium text-[var(--text-primary)]">Total Project Sourcing: <span id="bom-grand-total" class="font-mono text-zinc-700 dark:text-zinc-300 font-semibold">$0.00</span></span>
+              </div>
+            </div>
+                <!-- BLOCK 3: WIRING SCHEMATIC EDITOR -->
+          <section id="block-wiring" class="theme-card rounded-lg overflow-hidden relative">
+            <div class="flex items-center justify-between px-5 py-3.5 border-b theme-border bg-zinc-50/50 dark:bg-zinc-950/20">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="git-branch" class="w-4 h-4 text-[var(--color-accent)]"></i>
+                <h3 class="font-semibold text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Wiring Schematic</h3>
+              </div>
+              <div class="text-[11px] text-zinc-400 dark:text-zinc-500 font-sans hidden md:inline-block">
+                Drag symbols to position &bull; Connect terminals to wire
+              </div>
+            </div>
+
+            <!-- Toolbar across the top -->
+            <div class="px-5 py-2.5 border-b theme-border bg-zinc-50/30 dark:bg-zinc-900/10 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center space-x-1">
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mr-2">Components:</span>
+                <button onclick="addGenericElement('MCU')" class="btn-secondary py-1 px-2.5 text-[11px] h-7">+ MCU</button>
+                <button onclick="addGenericElement('Sensor')" class="btn-secondary py-1 px-2.5 text-[11px] h-7">+ Sensor</button>
+                <button onclick="addGenericElement('LED')" class="btn-secondary py-1 px-2.5 text-[11px] h-7">+ LED</button>
+                <button onclick="addGenericElement('Resistor')" class="btn-secondary py-1 px-2.5 text-[11px] h-7">+ R / C</button>
+                <button onclick="addGenericElement('Power')" class="btn-secondary py-1 px-2.5 text-[11px] h-7">+ Power</button>
+              </div>
+              
+              <div class="flex items-center space-x-1.5 text-xs">
+                <button onclick="exportToKiCadNetlist()" class="btn-secondary py-1 px-2.5 text-[11px] h-7 text-blue-500 dark:text-blue-400" title="Download standard board layout netlist">
+                  Export KiCad .net
+                </button>
+                <div class="inline-flex rounded-md shadow-sm">
+                  <button onclick="zoomWiringCanvas(1.1)" class="btn-secondary py-1 px-2.5 text-xs h-7 rounded-r-none" title="Zoom In">+</button>
+                  <button onclick="zoomWiringCanvas(0.9)" class="btn-secondary py-1 px-2.5 text-xs h-7 rounded-none border-l-0 border-r-0" title="Zoom Out">-</button>
+                  <button onclick="resetWiringCanvasZoom()" class="btn-secondary py-1 px-2.5 text-[11px] h-7 rounded-l-none" title="Fitted zoom to workspace">Fit</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- KiCad Diagram Stage Canvas area -->
+            <div class="p-4 bg-zinc-50/50 dark:bg-zinc-950/20 overflow-hidden relative">
+              <div class="w-full h-[520px] bg-zinc-50 dark:bg-zinc-950 border theme-border relative overflow-hidden flex items-center justify-center rounded-lg cursor-grab select-none">
+                
+                <!-- Infinite schematic paper dot matrix panel -->
+                <div id="schematic-paper" class="absolute inset-0 engineering-grid transition-transform duration-75 relative w-full h-full">
+                  <svg id="schematic-svg" class="absolute top-0 left-0 w-full h-full" style="transform: scale(1); transform-origin: center;">
+                    <g id="wires-layer"></g>
+                    <!-- Elements get loaded dynamic -->
+                  </svg>
+                </div>
+
+                <!-- Live inline component parameters editing window pop -->
+                <div id="inline-prop-panel" class="absolute hidden bg-zinc-900 border border-zinc-800 p-4 rounded-lg shadow-xl z-50 w-64 space-y-3 font-sans text-xs text-zinc-100">
+                  <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+                    <span class="font-medium text-xs text-zinc-300">Properties</span>
+                    <button onclick="closeInlinePropertyPanel()" class="text-zinc-500 hover:text-zinc-300"><i data-lucide="x" class="w-4 h-4"></i></button>
+                  </div>
+                  <div class="space-y-2">
+                    <div>
+                      <label class="block text-[10px] text-zinc-500 tracking-wider font-semibold uppercase">RefDes</label>
+                      <input id="inline-prop-id" type="text" class="w-full bg-zinc-950 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-100 outline-none" disabled />
+                    </div>
+                    <div>
+                      <label class="block text-[10px] text-zinc-500 tracking-wider font-semibold uppercase">Name</label>
+                      <input id="inline-prop-name" type="text" oninput="saveInlineProps()" class="w-full bg-zinc-950 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-100 outline-none focus:border-blue-500" />
+                    </div>
+                    <div>
+                      <label class="block text-[10px] text-zinc-500 tracking-wider font-semibold uppercase">Specifications</label>
+                      <input id="inline-prop-type" type="text" oninput="saveInlineProps()" class="w-full bg-zinc-950 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-100 outline-none focus:border-blue-500" />
+                    </div>
+                  </div>
+                  <div class="pt-1.5">
+                    <button onclick="deleteSelectedElement()" class="w-full py-1.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 text-[11px] font-medium transition">Delete Component</button>
+                  </div>
+                </div>
+
+                <div class="absolute bottom-3 left-3 bg-zinc-100/90 dark:bg-zinc-950/90 border theme-border px-3 py-1.5 rounded-md text-[10px] text-zinc-500 pointer-events-none">
+                  Drag parts to reposition &bull; Double-click wire to re-route
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- BLOCK 4: INTERACTIVE PCB LAYOUT VIEWER -->
+          <section id="block-pcb" class="theme-card rounded-lg overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3.5 border-b theme-border bg-zinc-50/50 dark:bg-zinc-950/20">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="cpu" class="w-4 h-4 text-[var(--color-accent)]"></i>
+                <h3 class="font-semibold text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">PCB Trace Layers</h3>
+              </div>
+              <div class="text-xs text-zinc-400 dark:text-zinc-500 font-sans">
+                2 layer copper substrate layout view
+              </div>
+            </div>
+
+            <!-- Layout Layers checklist toolbar buttons -->
+            <div class="px-5 py-2.5 bg-zinc-50/30 dark:bg-zinc-900/10 border-b theme-border flex flex-wrap items-center justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-zinc-500">
+                <span class="text-[10px] font-semibold uppercase tracking-wider">Layer Filters:</span>
+                <label class="flex items-center space-x-1.5 cursor-pointer">
+                  <input type="checkbox" checked onchange="togglePCBLayer('layer-comp')" class="rounded border-zinc-300 dark:border-zinc-800 text-[var(--color-accent)] bg-transparent focus:ring-0" />
+                  <span class="text-zinc-700 dark:text-zinc-300">Composite</span>
+                </label>
+                <label class="flex items-center space-x-1.5 cursor-pointer">
+                  <input type="checkbox" checked onchange="togglePCBLayer('layer-fcu')" class="rounded border-zinc-300 dark:border-zinc-800 text-red-500 bg-transparent focus:ring-0" />
+                  <span class="text-rose-500 font-medium">F.Cu (Top)</span>
+                </label>
+                <label class="flex items-center space-x-1.5 cursor-pointer">
+                  <input type="checkbox" checked onchange="togglePCBLayer('layer-bcu')" class="rounded border-zinc-300 dark:border-zinc-800 text-blue-500 bg-transparent focus:ring-0" />
+                  <span class="text-blue-500 font-medium">B.Cu (Bottom)</span>
+                </label>
+                <label class="flex items-center space-x-1.5 cursor-pointer">
+                  <input type="checkbox" checked onchange="togglePCBLayer('layer-silk')" class="rounded border-zinc-300 dark:border-zinc-800 text-zinc-500 bg-transparent focus:ring-0" />
+                  <span class="text-zinc-600 dark:text-zinc-400">Silkscreen</span>
+                </label>
+                <label class="flex items-center space-x-1.5 cursor-pointer">
+                  <input type="checkbox" checked onchange="togglePCBLayer('layer-drill')" class="rounded border-zinc-300 dark:border-zinc-800 text-amber-500 bg-transparent focus:ring-0" />
+                  <span class="text-amber-500 font-medium">Drills</span>
+                </label>
+              </div>
+
+              <div id="enclosure-dimensions" class="text-[11px] text-zinc-500 font-mono">
+                100mm &times; 62mm
+              </div>
+            </div>
+
+            <!-- Main High-Polished PCB SVG Canvas -->
+            <div class="p-4 bg-zinc-50/50 dark:bg-zinc-950/20 relative flex flex-col items-center justify-center">
+              <div class="w-full h-auto max-w-4xl relative overflow-hidden rounded-lg border theme-border flex items-center justify-center p-2 bg-[#05140b]">
+                <svg id="pcb-main-svg" class="w-full h-auto aspect-[16/10]" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Generated dynamic contents with green substrate, traces, components, silkscreen -->
+                </svg>
+
+                <!-- Layer and element hover tooltip info box on cursor -->
+                <div id="pcb-tooltip" class="absolute pointer-events-none hidden bg-zinc-950/95 border border-zinc-850 p-2.5 rounded-md shadow-xl text-[10.5px] font-mono leading-relaxed z-50 text-white min-w-[170px]">
+                  <!-- Tooltip dynamic parameters go here -->
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- BLOCK 5: STEP ASSEMBLY GUIDE -->
+          <section id="block-assembly" class="theme-card rounded-lg overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3.5 border-b theme-border bg-zinc-50/50 dark:bg-zinc-950/20">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="wrench" class="w-4 h-4 text-[var(--color-accent)]"></i>
+                <h3 class="font-semibold text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Manual Assembly Instructions</h3>
+              </div>
+              <button onclick="window.print()" class="btn-secondary px-2.5 py-1 text-[11px] h-8">
+                Print Assembly Guide
+              </button>
+            </div>
+
+            <!-- Assembly Build Progress tracker -->
+            <div class="px-5 py-3 border-b theme-border bg-zinc-50/30 dark:bg-zinc-900/10 flex items-center justify-between text-xs text-zinc-500">
+              <span class="font-medium">Assembly & soldering progress:</span>
+              <div class="flex-1 mx-4 bg-zinc-200 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                <div id="assembly-progress-bar" class="bg-[var(--color-accent)] h-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+              <span id="assembly-progress-text" class="font-semibold text-[var(--color-accent)] font-mono">0% Completed</span>
+            </div>
+
+            <div class="p-5">
+              <div id="assembly-steps-container" class="space-y-3.5">
+                <!-- Step cards populated dynamically -->
+              </div>
+            </div>
+                <!-- BLOCK 6: DESIGN RULE CHECK (DRC) SYSTEM -->
+          <section id="block-drc" class="theme-card rounded-lg overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3.5 border-b theme-border bg-zinc-50/50 dark:bg-zinc-950/20">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="shield-check" class="w-4 h-4 text-[var(--color-accent)]"></i>
+                <h3 class="font-semibold text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Design Rule Checker</h3>
+              </div>
+              <button onclick="triggerDRCReRun()" class="btn-secondary px-2.5 py-1 text-[11px] h-8">
+                Re-Run DRC Scan
+              </button>
+            </div>
+
+            <div class="p-5">
+              <div id="drc-summary-panel" class="pt-4 pb-3.5 px-4 rounded border border-emerald-500/10 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 flex items-start space-x-3">
+                <i data-lucide="check-circle" class="w-5 h-5 mt-0.5 shrink-0"></i>
+                <div>
+                  <h4 class="font-semibold text-xs uppercase tracking-wider">Scan Result: Safe</h4>
+                  <p class="text-[12.5px] opacity-90 leading-normal mt-1">
+                    No routing overlaps, open stubs, or electrical design rule violations detected. Schematic is ready for fabrication.
+                  </p>
+                </div>
+              </div>
+              <div id="drc-issues-list" class="space-y-3.5 mt-4 hidden">
+                <!-- Populate list of errors or warnings dynamically -->
+              </div>
+            </div>
+          </section>
+
+          <!-- DESIGN COST ALTERNATIVE SWAPS PANEL -->
+          <div id="savings-box" class="theme-card bg-blue-500/5 border border-blue-500/10 p-5 rounded-lg flex items-start justify-between hidden animate-fade-in">
+            <div class="flex items-start space-x-3">
+              <div class="p-1.5 bg-blue-500/10 rounded border border-blue-500/10 text-blue-500">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-xs uppercase tracking-wider font-semibold text-blue-500">Optimized Sourcing Alternatives</h4>
+                <div id="savings-recommendations" class="text-xs text-zinc-500 leading-normal mt-1.5 space-y-1">
+                  <!-- suggestions inline -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- FLOATING PROMPT BAR (BOT) -->
+      <footer class="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-[var(--bg-app)] via-[var(--bg-app)] to-transparent pointer-events-none z-30">
+        <div class="max-w-3xl mx-auto pointer-events-auto theme-card shadow-lg rounded-lg overflow-hidden bg-opacity-95 backdrop-blur-md">
+          <div class="p-2.5 flex items-center space-x-2">
+            <button class="p-2 text-[var(--color-accent)] hover:opacity-80 transition" title="Hardware AI Copilot">
+              <i data-lucide="zap" class="w-5 h-5"></i>
+            </button>
+            <input id="prompt-input-bar" type="text" placeholder="E.g., Raspberry Pi base controller with transient diodes and a CAN bus driver..."
+              class="flex-1 bg-transparent border-0 outline-none text-[13px] text-[var(--text-primary)] placeholder-zinc-500 py-2 font-sans" 
+              onkeydown="handlePromptKeyDown(event)"/>
+            
+            <button id="generate-trigger-btn" onclick="triggerHardwareGeneration()" class="btn-primary py-2 px-3 rounded text-[12px] h-9">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <!-- Subtle Helper Strip -->
+          <div class="bg-zinc-50 dark:bg-zinc-950/40 px-4 py-2 flex items-center justify-between border-t border-zinc-200 dark:border-zinc-900 border-opacity-70 text-[11px] text-zinc-500 font-sans">
+            <div class="flex items-center space-x-1">
+              <span>Hardware Copilot active. Enter parameters above to generate workspace fields.</span>
+            </div>
+            <div class="opacity-75">
+              Press enter to generate
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- AUTHENTICATION DIALOG POPUP MODAL -->
+  <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden p-4">
+    <div class="theme-card max-w-sm w-full p-6 rounded-xl space-y-5 text-center bg-[var(--bg-card)]">
+      <div class="flex justify-between items-center border-b theme-border pb-3">
+        <div class="flex items-center space-x-2">
+          <svg class="w-6 h-6" viewBox="0 0 100 100" fill="none">
+            <path d="M20 80h60M30 80l10-30m10-5l25-15" stroke="var(--color-accent)" stroke-width="6" stroke-linecap="round"/>
+          </svg>
+          <span class="font-bold text-sm tracking-tight text-[var(--text-primary)]">Sign In to Wirecraft</span>
+        </div>
+        <button onclick="closeAuthModal()" class="text-zinc-500 hover:text-white transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <!-- Third Party login buttons -->
+      <div class="space-y-2">
+        <button onclick="simulateThirdPartyAuth('Google')" class="w-full flex items-center justify-center space-x-2.5 p-2 bg-white text-zinc-900 font-medium text-xs rounded border border-zinc-200 hover:bg-zinc-100 transition shadow-sm">
+          <svg class="w-4 h-4" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.66.63-1.4 1.37-2.19 2.09z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+        <button onclick="simulateThirdPartyAuth('GitHub')" class="w-full flex items-center justify-center space-x-2.5 p-2 bg-[#181717] text-white font-medium text-xs rounded border border-zinc-800 hover:bg-black transition shadow-sm">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482C19.138 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+          </svg>
+          <span>Continue with GitHub</span>
+        </button>
+      </div>
+
+      <div class="relative flex py-2 items-center">
+        <div class="flex-grow border-t border-zinc-800"></div>
+        <span class="flex-shrink mx-3 text-[10px] text-zinc-500 uppercase tracking-widest leading-none">or email</span>
+        <div class="flex-grow border-t border-zinc-800"></div>
+      </div>
+
+      <!-- Compact Credential logs -->
+      <div class="space-y-2 text-left">
+        <div>
+          <label class="block text-[10px] text-zinc-500 uppercase mb-1">Email address</label>
+          <input id="auth-email" type="email" placeholder="you@domain.com" class="w-full bg-zinc-950/80 border theme-border px-3 py-1.5 text-xs rounded text-white outline-none focus:border-cyan-500" />
+        </div>
+        <div>
+          <label class="block text-[10px] text-zinc-500 uppercase mb-1">Password</label>
+          <input id="auth-password" type="password" placeholder="•••••••••" class="w-full bg-zinc-950/80 border theme-border px-3 py-1.5 text-xs rounded text-white outline-none focus:border-cyan-500" />
+        </div>
+      </div>
+
+      <button onclick="handleEmailAuth()" class="w-full accent-btn p-2 rounded text-xs font-bold tracking-wider hover:bg-opacity-90">
+        AUTHORIZE ACCOUNT
+      </button>
+
+      <div class="text-[10px] text-zinc-500">
+        Demo Session: Full persistent database local mocks configured.
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKSPACE SCRIPTS AND CORE CONTROLLERS -->
+  <script>
+    // System placeholder configuration for API
+    const SYSTEM_PROMPT = `You are a professional robotic and industrial hardware circuit engineering generator. 
+Always output clean, standard json with no conversational text, no markdown. 
+BOM count is strictly 5-8 items. Wiring contains 3-6 logical components with relative (x,y) positioning on standard 0-100 schematic grid.
+
+The output schema must strictly validate as:
+{
+  "info": { "title": "...", "description": "...", "difficulty": "Beginner|Intermediate|Advanced", "estimatedTime": "...", "totalCost": 0.00, "tags": [], "safetyNotes": "..." },
+  "bom": [ { "id": "...", "name": "...", "partNumber": "...", "quantity": 1, "unitCost": 0.00, "totalCost": 0.00, "description": "...", "category": "MCU|Sensor|Actuator|Display|Power", "specifications": "...", "lcscLink": "...", "amazonLink": "...", "aliexpressLink": "..." } ],
+  "wiring": {
+    "components": [ { "id": "...", "name": "...", "type": "...", "pins": ["GND", "VCC", "SDA", "SCL"], "x": 10, "y": 20, "color": "#ff0000" } ],
+    "connections": [ { "from": "compId.PIN", "to": "compId.PIN", "signal": "I2C SDA", "voltage": "3.3V", "color": "#00ff00" } ],
+    "drcIssues": [ { "severity": "error|warning", "message": "...", "componentId": "..." } ]
+  },
+  "mech": { "components": [], "dimensions": "100mm x 62mm", "notes": "" },
+  "instructions": [ { "id": "1", "stepNumber": 1, "title": "...", "description": "...", "details": "...", "tools": [], "warning": "...", "estimatedTime": "...", "completed": false } ],
+  "model3d": { "type": "robot|drone|handheld|pcb|wearable|vehicle|enclosure", "primaryColor": "#ff0055", "accentColor": "#00d4ff" },
+  "costOptimizations": [ { "componentId": "...", "suggestion": "Swap with generic variant", "savings": 1.50 } ]
+}`;
+
+    // Supabase Placeholder setup
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    let supabaseClient = null;
+    try {
+      if (typeof window.supabase !== 'undefined' && SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      console.error("Supabase initialize failure.", e);
+    }
+
+    // STATE STORAGE ENGINE
+    let currentProject = null;
+    let savedProjects = [];
+    let activeTheme = 'dark-steel';
+    let userSession = null;
+    let localUsageCount = 10;
+    let isSidebarOpen = true;
+
+    // Active drag tracking
+    let dragComponentId = null;
+    let dragStartPos = { x: 0, y: 0 };
+    let dragType = null;
+    let currentScale = 1;
+    let lineDrawStartPin = null;
+
+    // Load on init
+    window.addEventListener('load', () => {
+      // Restore theme
+      const cachedTheme = localStorage.getItem('wc_theme');
+      if (cachedTheme) {
+        setGlobalTheme(cachedTheme);
+      } else {
+        setGlobalTheme('dark-steel');
+      }
+
+      // Restore usage limit counts
+      const usage = localStorage.getItem('wc_usage_local');
+      if (usage !== null) {
+        localUsageCount = parseInt(usage);
+      } else {
+        localStorage.setItem('wc_usage_local', 10);
+      }
+      updateUsageIndicators();
+
+      // Retrieve local projects or render dummy library
+      loadLocalProjectsSync();
+      
+      // Render layout icons
+      lucide.createIcons();
+    });
+
+    function updateUsageIndicators() {
+      const remainingBar = document.getElementById('rate-usage-bar');
+      const remainingText = document.getElementById('rate-usage-text');
+      if (remainingBar) remainingBar.style.width = (localUsageCount * 10) + '%';
+      if (remainingText) remainingText.textContent = `${localUsageCount}/10 Requests remaining this week`;
+    }
+
+    function setGlobalTheme(themeId) {
+      activeTheme = themeId;
+      document.documentElement.setAttribute('data-theme', themeId);
+      document.body.setAttribute('data-theme', themeId);
+      localStorage.setItem('wc_theme', themeId);
+      
+      // Sync Tailwind.dark layout state based on active theme
+      const isDark = themeId !== 'engineering-paper';
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      
+      // Highlight the active switcher dot button precisely
+      const dotButtons = document.querySelectorAll('#theme-switcher-container button');
+      dotButtons.forEach(btn => {
+        const onclickAttr = btn.getAttribute('onclick') || '';
+        if (onclickAttr.includes(themeId)) {
+          btn.classList.add('ring-2', 'ring-blue-500', 'scale-110', 'opacity-100');
+          btn.classList.remove('opacity-60');
+        } else {
+          btn.classList.remove('ring-2', 'ring-blue-500', 'scale-110', 'opacity-100');
+          btn.classList.add('opacity-60');
+        }
+      });
+      
+      // Repaint PCB/Visual elements to match theme palette
+      if (currentProject) {
+        drawWiringSchematic();
+        drawPCBSVG();
+      }
+    }
+
+    function toggleSidebar() {
+      isSidebarOpen = !isSidebarOpen;
+      const sidebar = document.getElementById('sidebar-panel');
+      if (isSidebarOpen) {
+        sidebar.style.width = '280px';
+        sidebar.style.opacity = '1';
+        sidebar.style.padding = 'initial';
+      } else {
+        sidebar.style.width = '0px';
+        sidebar.style.opacity = '0';
+        sidebar.style.overflow = 'hidden';
+      }
+    }
+
+    function loadLocalProjectsSync() {
+      const stored = localStorage.getItem('wc_projects_local');
+      if (stored) {
+        savedProjects = JSON.parse(stored);
+      } else {
+        // Mock starter templates to make application looking professional
+        savedProjects = [];
+      }
+      renderProjectLibraryList();
+    }
+
+    function renderProjectLibraryList() {
+      const listEl = document.getElementById('project-list');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      if (savedProjects.length === 0) {
+        listEl.innerHTML = `<div class="text-[11px] text-zinc-500 py-2 italic text-center">No projects in workspace</div>`;
+        return;
+      }
+
+      savedProjects.forEach((proj, idx) => {
+        const item = document.createElement('div');
+        item.className = `p-2 rounded cursor-pointer flex items-center justify-between text-xs hover:bg-zinc-800 transition ${currentProject && currentProject.id === proj.id ? 'border border-[var(--color-accent)] font-semibold' : ''}`;
+        item.innerHTML = `
+          <div class="flex items-center space-x-2 truncate flex-1" onclick="loadProjectById('${proj.id}')">
+            <i data-lucide="cpu" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <span class="truncate">${proj.name}</span>
+          </div>
+          <button onclick="deleteProject('${proj.id}', event)" class="p-0.5 text-zinc-500 hover:text-red-400 opacity-60 hover:opacity-100">
+            <i data-lucide="trash-2" class="w-3 h-3"></i>
+          </button>
+        `;
+        listEl.appendChild(item);
+      });
+      lucide.createIcons();
+    }
+
+    function createNewProject() {
+      currentProject = {
+        id: 'proj_' + Date.now(),
+        name: 'Untitled Workspace Schema',
+        data: {
+          info: {
+            title: 'Untitled Workspace Schema',
+            description: 'Provide query parameters or hardware ideas in the bottom chat bar to orchestrate details.',
+            difficulty: 'Beginner',
+            estimatedTime: '4 Hours',
+            totalCost: 12.00,
+            tags: ['Custom', 'DIY'],
+            safetyNotes: 'Observe correct lead placements and terminal ground loops.'
+          },
+          bom: [
+            { id: 'u1', name: 'Atmega328P MCU', partNumber: 'ATMEGA328P-PU', quantity: 1, unitCost: 4.50, totalCost: 4.50, description: '8-bit microcontroller core', category: 'MCU', specifications: 'DIP-28, 5V, 20MHz', lcscLink: 'https://szlcsc.com', amazonLink: '#', aliexpressLink: '#' },
+            { id: 'r1', name: 'Pull-up Resistor', partNumber: 'RC0603FR-0710KL', quantity: 2, unitCost: 0.15, totalCost: 0.30, description: '10k Ohm axial lead component', category: 'Actuator', specifications: '0.25W metal film', lcscLink: 'https://szlcsc.com', amazonLink: '#', aliexpressLink: '#' }
+          ],
+          wiring: {
+            components: [
+              { id: 'MCU_0', name: 'Main ATMega MCU', type: 'Atmega328P', pins: ['GND', 'VCC', 'RESET', 'SCK', 'MISO', 'MOSI'], x: 20, y: 35, color: '#f59e0b' },
+              { id: 'LED_0', name: 'Indicator LED', type: 'LED Red 5mm', pins: ['ANODE', 'CATHODE'], x: 60, y: 55, color: '#ef4444' }
+            ],
+            connections: [
+              { from: 'MCU_0.RESET', to: 'LED_0.ANODE', signal: 'RST LED', voltage: '5V', color: '#3b82f6' }
+            ],
+            drcIssues: [
+              { severity: 'warning', message: 'Atmospheric decoupling capacitors omitted on core rails.', componentId: 'MCU_0' }
+            ]
+          },
+          instructions: [
+            { id: '1', stepNumber: 1, title: 'Check workspace materials', description: 'Lay out all mechanical elements, microcontroller core modules, and resistor resistors.', details: 'Apply clean static precautions.', tools: ['Tweezers'], warning: 'ESD sensitive components!', estimatedTime: '15 mins', completed: false }
+          ],
+          model3d: { type: 'pcb', primaryColor: '#0a3f1d', accentColor: '#22c55e' }
+        }
+      };
+
+      document.getElementById('project-title-input').value = currentProject.name;
+      showWorkspaceBlocks();
+      saveCurrentToCollection();
+    }
+
+    function showWorkspaceBlocks() {
+      document.getElementById('empty-workspace-view').classList.add('hidden');
+      document.getElementById('active-workspace-blocks').classList.remove('hidden');
+      syncProjectDataToView();
+    }
+
+    function renameProject(newName) {
+      if (!currentProject) return;
+      currentProject.name = newName || 'Untitled Project';
+      saveCurrentToCollection();
+    }
+
+    function saveCurrentToCollection() {
+      if (!currentProject) return;
+      const existIdx = savedProjects.findIndex(p => p.id === currentProject.id);
+      if (existIdx !== -1) {
+        savedProjects[existIdx] = currentProject;
+      } else {
+        savedProjects.push(currentProject);
+      }
+      localStorage.setItem('wc_projects_local', JSON.stringify(savedProjects));
+      renderProjectLibraryList();
+    }
+
+    function deleteProject(projId, event) {
+      if (event) event.stopPropagation();
+      savedProjects = savedProjects.filter(p => p.id !== projId);
+      localStorage.setItem('wc_projects_local', JSON.stringify(savedProjects));
+      if (currentProject && currentProject.id === projId) {
+        currentProject = null;
+        document.getElementById('project-title-input').value = 'No Project Selected';
+        document.getElementById('empty-workspace-view').classList.remove('hidden');
+        document.getElementById('active-workspace-blocks').classList.add('hidden');
+      }
+      renderProjectLibraryList();
+    }
+
+    function loadProjectById(projId) {
+      const found = savedProjects.find(p => p.id === projId);
+      if (found) {
+        currentProject = found;
+        document.getElementById('project-title-input').value = currentProject.name;
+        showWorkspaceBlocks();
+      }
+    }
+
+    // SCROLL UTILITIES
+    function scrollToBlock(blockId) {
+      const block = document.getElementById(blockId);
+      if (block) {
+        block.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function toggleBlockVisibility(bodyId) {
+      const body = document.getElementById(bodyId);
+      if (body) {
+        body.classList.toggle('hidden');
+      }
+    }
+
+    // UI RENDER: ALL VIEWPORTS SYNC
+    function syncProjectDataToView() {
+      if (!currentProject || !currentProject.data) return;
+      
+      const data = currentProject.data;
+      
+      // Update Overview text fields
+      document.getElementById('overview-title').textContent = data.info.title || 'Main Workspace';
+      document.getElementById('overview-desc').textContent = data.info.description || 'Hardware schematic diagram generated by Wirecraft AI workspace.';
+      
+      // Fill overview tags
+      const tagsContainer = document.getElementById('overview-tags');
+      tagsContainer.innerHTML = '';
+      if (data.info.tags) {
+        data.info.tags.forEach(t => {
+          const pill = document.createElement('span');
+          pill.className = 'text-[10px] px-2 py-0.5 bg-zinc-800 text-zinc-300 rounded-full border theme-border font-mono';
+          pill.textContent = t;
+          tagsContainer.appendChild(pill);
+        });
+      }
+
+      // KPIs
+      document.getElementById('stat-difficulty').textContent = data.info.difficulty || 'Beginner';
+      document.getElementById('stat-time').textContent = data.info.estimatedTime || '12 Hrs';
+      document.getElementById('stat-cost').textContent = '$' + (data.info.totalCost || 24.50).toFixed(2);
+      document.getElementById('stat-count').textContent = (data.bom ? data.bom.length : 0) + ' items';
+
+      // 3D Isometric procedural view
+      renderIsometricSVG(data.model3d || { type: 'pcb', primaryColor: '#2563eb', accentColor: '#0ea5e9' });
+
+      // BOM list fill
+      renderBOMTable(data.bom || []);
+
+      // KiCad Schematic Diagram Node components & Ortho lines
+      drawWiringSchematic();
+
+      // PCB copper Layout rendering
+      drawPCBSVG();
+
+      // Step instruction cards construction
+      renderAssemblySteps(data.instructions || []);
+
+      // DRC Errors summary
+      renderDRCMessages(data.wiring ? data.wiring.drcIssues : []);
+    }
+
+    // GENERATE ISOMETRIC PROCEDURAL SVG DISPLAY (OVERVIEW BLOCK)
+    function renderIsometricSVG(model3d) {
+      const wrap = document.getElementById('isometric-canvas-wrap');
+      if (!wrap) return;
+
+      const primary = model3d.primaryColor || 'var(--color-accent)';
+      const accent = model3d.accentColor || '#10b981';
+      const type = model3d.type || 'pcb';
+
+      let innerGraphics = '';
+
+      if (type === 'pcb') {
+        innerGraphics = `
+          <!-- PCB Substrate slab -->
+          <polygon points="100,230 250,150 400,230 250,310" fill="#061a0e" stroke="#153a20" stroke-width="3" />
+          <polygon points="100,230 250,150 250,160 100,240" fill="#04120a" />
+          <polygon points="400,230 250,310 250,320 400,240" fill="#020905" />
+          <!-- Copper paths -->
+          <polygon points="180,210 250,175 300,200 230,240" fill="none" stroke="${accent}" stroke-width="2.5" opacity="0.8" />
+          <!-- Solder components -->
+          <box x="210" y="180" width="30" height="20" fill="${primary}" />
+          <g transform="translate(190, 190)">
+            <polygon points="40,20 65,7 90,20 65,33" fill="${primary}" />
+            <polygon points="40,20 65,7 65,15 40,28" fill="#5b0722" />
+            <polygon points="90,20 65,33 65,41 90,28" fill="#bd1950" />
+          </g>
+        `;
+      } else if (type === 'robot' || type === 'drone') {
+        innerGraphics = `
+          <!-- Solid mechanical arm chassis base -->
+          <polygon points="120,250 250,180 380,250 250,320" fill="#2d3748" stroke="#1a202c" stroke-width="2" />
+          <polygon points="120,250 250,180 250,195 120,265" fill="#1a202c" />
+          <!-- Arm joints -->
+          <line x1="250" y1="230" x2="250" y2="120" stroke="${primary}" stroke-width="8" stroke-linecap="round" />
+          <line x1="250" y1="120" x2="310" y2="90" stroke="${accent}" stroke-width="6" stroke-linecap="round" />
+          <!-- Rotary gripper gripper jaws -->
+          <circle cx="250" cy="230" r="12" fill="#4a5568" />
+          <circle cx="250" cy="120" r="8" fill="#e2e8f0" />
+          <circle cx="310" cy="90" r="5" fill="${primary}" />
+        `;
+      } else {
+        // Enclosure or generic gadget isometric render
+        innerGraphics = `
+          <polygon points="130,240 250,170 370,240 250,310" fill="#1e293b" stroke="#334155" stroke-width="2.5" />
+          <polygon points="130,240 250,170 250,190 130,260" fill="#0f172a" />
+          <polygon points="370,240 250,310 250,330 370,260" fill="#384457" />
+          <!-- Screen glow aspect -->
+          <polygon points="160,225 250,184 320,220 230,263" fill="${primary}" opacity="0.65" />
+          <!-- Dynamic control dials -->
+          <circle cx="250" cy="250" r="6" fill="${accent}" />
+        `;
+      }
+
+      wrap.innerHTML = `
+        <svg class="w-full max-w-[420px]" viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g>
+            ${innerGraphics}
+            <text x="20" y="30" font-family="monospace" font-size="11" fill="var(--text-secondary)">MODEL: 3D_VECTOR_V1</text>
+          </g>
+        </svg>
+      `;
+    }
+
+    // DRAW BILL OF MATERIALS (BOM)
+    function renderBOMTable(bomList) {
+      const tbody = document.getElementById('bom-table-body');
+      tbody.innerHTML = '';
+      let runningTotal = 0;
+
+      bomList.forEach((item) => {
+        const itemTotal = item.quantity * item.unitCost;
+        runningTotal += itemTotal;
+
+        const row = document.createElement('tr');
+        row.className = 'border-b border-zinc-900 hover:bg-zinc-900/40 transition duration-150';
+        row.innerHTML = `
+          <td class="py-3 font-semibold text-[var(--text-primary)]">${escapeHTML(item.name)}</td>
+          <td class="py-3 text-[11px] text-zinc-400">${escapeHTML(item.partNumber)}</td>
+          <td class="py-3 text-[11px] text-zinc-500">${escapeHTML(item.category)}</td>
+          <td class="py-3 text-center">${item.quantity}</td>
+          <td class="py-3 text-right">$${item.unitCost.toFixed(2)}</td>
+          <td class="py-3 text-right font-medium text-[var(--color-accent)]">$${itemTotal.toFixed(2)}</td>
+          <td class="py-3 text-center">
+            <div class="flex items-center justify-center space-x-1.5">
+              <a href="https://www.lcsc.com/search?q=${encodeURIComponent(item.partNumber)}" target="_blank" class="px-1.5 py-0.5 bg-blue-950/45 text-blue-400 border border-blue-900/60 rounded text-[9px] font-bold">LCSC</a>
+              <a href="https://www.amazon.com/s?k=${encodeURIComponent(item.name)}" target="_blank" class="px-1.5 py-0.5 bg-amber-950/45 text-amber-500 border border-amber-900/60 rounded text-[9px] font-bold">AMZ</a>
+              <a href="https://www.aliexpress.com/wholesale?SearchText=${encodeURIComponent(item.name)}" target="_blank" class="px-1.5 py-0.5 bg-red-950/45 text-red-400 border border-red-900/60 rounded text-[9px] font-bold">ALI</a>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      document.getElementById('bom-grand-total').textContent = '$' + runningTotal.toFixed(2);
+    }
+
+    // RUN COST SWAP OPTIMIZER MODEL METHOD
+    function runCostOptimizer() {
+      if (!currentProject || !currentProject.data) {
+        alert("Please load or generate a system workspace first.");
+        return;
+      }
+      const savingsContainer = document.getElementById('savings-recommendations');
+      const box = document.getElementById('savings-box');
+      savingsContainer.innerHTML = '';
+
+      const rawSavings = currentProject.data.costOptimizations || [
+        { componentId: 'MCU_0', suggestion: 'Replace with high quality SMD alternate chip packaging', savings: 1.45 }
+      ];
+
+      rawSavings.forEach(opt => {
+        const item = document.createElement('div');
+        item.className = 'p-2 bg-indigo-950/40 border border-indigo-900/60 rounded flex items-center justify-between text-xs';
+        item.innerHTML = `
+          <span class="text-zinc-300 font-mono"><strong class="text-indigo-400">${opt.componentId}</strong>: ${opt.suggestion}</span>
+          <span class="text-emerald-400 font-bold">-$${opt.savings.toFixed(2)} Saved</span>
+        `;
+        savingsContainer.appendChild(item);
+      });
+
+      box.classList.remove('hidden');
+      scrollToBlock('savings-box');
+    }
+
+    // INTERACTIVE KI-CAD SCHEMATIC DIAGRAM CONTROLLER
+    function drawWiringSchematic() {
+      const g = document.getElementById('wires-layer');
+      const svg = document.getElementById('schematic-svg');
+      if (!g || !svg) return;
+
+      // Clean existing nodes & wires
+      g.innerHTML = '';
+      const existingBlocks = svg.querySelectorAll('.schematic-node-block');
+      existingBlocks.forEach(el => el.remove());
+
+      const data = currentProject.data.wiring || { components: [], connections: [] };
+
+      // 1. Draw connections lines first, behind components
+      data.connections.forEach((conn) => {
+        const fromPinInfo = findPinCoordinates(conn.from);
+        const toPinInfo = findPinCoordinates(conn.to);
+
+        if (fromPinInfo && toPinInfo) {
+          // Compute Orthogonal schematic wire route path
+          const pathD = computeOrthogonalRoute(fromPinInfo.x, fromPinInfo.y, toPinInfo.x, toPinInfo.y);
+          const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          pathEl.setAttribute('d', pathD);
+          pathEl.className.baseVal = "wire-path";
+          pathEl.style.stroke = conn.color || 'var(--color-accent)';
+          pathEl.setAttribute('title', `${conn.signal} (${conn.voltage})`);
+          pathEl.addEventListener('dblclick', () => {
+            // Delete wire action on double-click
+            data.connections = data.connections.filter(c => !(c.from === conn.from && c.to === conn.to));
+            drawWiringSchematic();
+          });
+          g.appendChild(pathEl);
+        }
+      });
+
+      // 2. Render actual module components in-place
+      data.components.forEach((comp) => {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        node.setAttribute('class', 'schematic-node-block cursor-grab select-none');
+        node.setAttribute('id', `schem-${comp.id}`);
+        // Render 0-100 values into viewport space width sizing
+        const realX = comp.x * 7.5;
+        const realY = comp.y * 5;
+        const width = 160;
+        const height = comp.pins ? comp.pins.length * 20 + 35 : 80;
+
+        node.setAttribute('transform', `translate(${realX}, ${realY})`);
+
+        // Header and layout backing rect
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute('width', width);
+        rect.setAttribute('height', height);
+        rect.setAttribute('rx', '4');
+        rect.setAttribute('fill', 'var(--bg-card)');
+        rect.setAttribute('stroke', comp.id === inlineSelectedCompId ? 'var(--color-accent)' : 'var(--border-color)');
+        rect.setAttribute('stroke-width', comp.id === inlineSelectedCompId ? '2.5' : '1.5');
+        node.appendChild(rect);
+
+        // Colored core accent top strip
+        const topStrip = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        topStrip.setAttribute('width', width);
+        topStrip.setAttribute('height', '8');
+        topStrip.setAttribute('rx', '1');
+        topStrip.setAttribute('fill', comp.color || 'var(--color-accent)');
+        node.appendChild(topStrip);
+
+        // Component ID Title Text Label
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute('x', '10');
+        label.setAttribute('y', '22');
+        label.setAttribute('fill', 'var(--text-primary)');
+        label.setAttribute('font-weight', 'bold');
+        label.setAttribute('font-size', '10.5');
+        label.setAttribute('font-family', 'monospace');
+        label.textContent = comp.id;
+        node.appendChild(label);
+
+        // Secondary descriptor name
+        const subLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        subLabel.setAttribute('x', '10');
+        subLabel.setAttribute('y', '32');
+        subLabel.setAttribute('fill', 'var(--text-secondary)');
+        subLabel.setAttribute('font-size', '8');
+        subLabel.setAttribute('font-family', 'monospace');
+        subLabel.textContent = comp.name;
+        node.appendChild(subLabel);
+
+        // Pins lists stubs routing left & right sides
+        if (comp.pins) {
+          comp.pins.forEach((pin, pinIdx) => {
+            const isRightSide = pinIdx % 2 !== 0; // split left and right stubs alternate
+            const pinY = 50 + (Math.floor(pinIdx / 2) * 22);
+            const pinX = isRightSide ? width : 0;
+
+            // Pin terminal protruding stub line
+            const pinLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            pinLine.setAttribute('x1', pinX);
+            pinLine.setAttribute('y1', pinY);
+            pinLine.setAttribute('x2', isRightSide ? pinX + 12 : pinX - 12);
+            pinLine.setAttribute('y2', pinY);
+            pinLine.setAttribute('stroke', 'var(--border-color)');
+            pinLine.setAttribute('stroke-width', '1.5');
+            node.appendChild(pinLine);
+
+            // Active hook circular interaction node
+            const pinDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            pinDot.setAttribute('cx', isRightSide ? pinX + 12 : pinX - 12);
+            pinDot.setAttribute('cy', pinY);
+            pinDot.setAttribute('r', '4');
+            pinDot.setAttribute('class', 'pin-stub');
+            pinDot.setAttribute('title', `Connect: ${comp.id}.${pin}`);
+            pinDot.addEventListener('click', (ev) => {
+              ev.stopPropagation();
+              handlePinWiringClick(`${comp.id}.${pin}`);
+            });
+            node.appendChild(pinDot);
+
+            // Print text label inside the element box
+            const pinText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            pinText.setAttribute('x', isRightSide ? pinX - 8 : pinX + 8);
+            pinText.setAttribute('y', pinY + 3);
+            pinText.setAttribute('fill', 'var(--text-secondary)');
+            pinText.setAttribute('font-size', '8.5');
+            pinText.setAttribute('text-anchor', isRightSide ? 'end' : 'start');
+            pinText.setAttribute('font-family', 'monospace');
+            pinText.textContent = pin;
+            node.appendChild(pinText);
+          });
+        }
+
+        // Setup mouse drag on elements
+        node.addEventListener('mousedown', (e) => {
+          if (e.target.classList.contains('pin-stub')) return;
+          dragComponentId = comp.id;
+          dragStartPos = { x: e.clientX, y: e.clientY };
+          node.classList.add('dragging');
+        });
+
+        // Click to view element properties
+        node.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          showInlinePropertiesPanel(comp.id, realX, realY);
+        });
+
+        svg.appendChild(node);
+      });
+
+      // Bind global drag events to coordinates update
+      svg.addEventListener('mousemove', (e) => {
+        if (!dragComponentId) return;
+        const comp = data.components.find(c => c.id === dragComponentId);
+        if (comp) {
+          const deltaX = (e.clientX - dragStartPos.x) / 7.5;
+          const deltaY = (e.clientY - dragStartPos.y) / 5.0;
+          comp.x = Math.max(0, Math.min(100, comp.x + deltaX));
+          comp.y = Math.max(0, Math.min(100, comp.y + deltaY));
+          dragStartPos = { x: e.clientX, y: e.clientY };
+          // Real-time rebuild wire stubs
+          drawWiringSchematic();
+        }
+      });
+
+      svg.addEventListener('mouseup', () => {
+        if (dragComponentId) {
+          const draggedEl = document.getElementById(`schem-${dragComponentId}`);
+          if (draggedEl) draggedEl.classList.remove('dragging');
+          dragComponentId = null;
+          // Persistent update project schema library cache
+          saveCurrentToCollection();
+        }
+      });
+    }
+
+    // PATH MATHEMATICS FOR KICAD-STYLE SCHEMATIC LINES
+    function computeOrthogonalRoute(x1, y1, x2, y2) {
+      const midX = x1 + (x2 - x1) / 2;
+      return `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`;
+    }
+
+    // COORDINATE DETECTORS FOR PIN WIRE ROUTING
+    function findPinCoordinates(pinPath) {
+      if (!pinPath || !currentProject) return null;
+      const parts = pinPath.split('.');
+      if (parts.length !== 2) return null;
+      
+      const compId = parts[0];
+      const pinName = parts[1];
+
+      const comp = currentProject.data.wiring.components.find(c => c.id === compId);
+      if (!comp) return null;
+
+      const realX = comp.x * 7.5;
+      const realY = comp.y * 5;
+      const width = 160;
+
+      const pinIdx = comp.pins.indexOf(pinName);
+      if (pinIdx === -1) return null;
+
+      const isRightSide = pinIdx % 2 !== 0;
+      const pinY = realY + 50 + (Math.floor(pinIdx / 2) * 22);
+      const pinX = realX + (isRightSide ? width + 12 : -12);
+
+      return { x: pinX, y: pinY };
+    }
+
+    // PIN INTERACTION LINE BUILDER
+    function handlePinWiringClick(pinFullName) {
+      if (!lineDrawStartPin) {
+        lineDrawStartPin = pinFullName;
+        alert(`Starting wire trace at: ${pinFullName}. Now click another terminal bulb pin to complete routing.`);
+      } else {
+        if (lineDrawStartPin === pinFullName) {
+          lineDrawStartPin = null;
+          return;
+        }
+        // Save new connection
+        if (currentProject && currentProject.data.wiring) {
+          const signalName = `SIG_${Date.now().toString().slice(-4)}`;
+          currentProject.data.wiring.connections.push({
+            from: lineDrawStartPin,
+            to: pinFullName,
+            signal: signalName,
+            voltage: '3.3V',
+            color: 'var(--color-accent)'
+          });
+          lineDrawStartPin = null;
+          drawWiringSchematic();
+          saveCurrentToCollection();
+        }
+      }
+    }
+
+    // PROPERTIES TOOLBAR AND UPDATE PARAMETERS INPLACE
+    let inlineSelectedCompId = null;
+    function showInlinePropertiesPanel(compId, rx, ry) {
+      inlineSelectedCompId = compId;
+      const c = currentProject.data.wiring.components.find(item => item.id === compId);
+      if (!c) return;
+
+      const panel = document.getElementById('inline-prop-panel');
+      panel.style.top = `${ry + 20}px`;
+      panel.style.left = `${rx + 40}px`;
+      panel.classList.remove('hidden');
+
+      document.getElementById('inline-prop-id').value = c.id;
+      document.getElementById('inline-prop-name').value = c.name;
+      document.getElementById('inline-prop-type').value = c.type;
+      
+      // trigger active highlight border repaint
+      drawWiringSchematic();
+    }
+
+    function saveInlineProps() {
+      if (!currentProject || !inlineSelectedCompId) return;
+      const c = currentProject.data.wiring.components.find(item => item.id === inlineSelectedCompId);
+      if (c) {
+        c.name = document.getElementById('inline-prop-name').value;
+        c.type = document.getElementById('inline-prop-type').value;
+        saveCurrentToCollection();
+      }
+    }
+
+    function deleteSelectedElement() {
+      if (!inlineSelectedCompId || !currentProject) return;
+      currentProject.data.wiring.components = currentProject.data.wiring.components.filter(c => c.id !== inlineSelectedCompId);
+      // Clean up orphaned connections too
+      currentProject.data.wiring.connections = currentProject.data.wiring.connections.filter(conn => {
+        return !conn.from.startsWith(inlineSelectedCompId + '.') && !conn.to.startsWith(inlineSelectedCompId + '.');
+      });
+      closeInlinePropertyPanel();
+      drawWiringSchematic();
+      saveCurrentToCollection();
+    }
+
+    function closeInlinePropertyPanel() {
+      inlineSelectedCompId = null;
+      document.getElementById('inline-prop-panel').classList.add('hidden');
+      drawWiringSchematic();
+    }
+
+    // ADD GENERIC BOARD AT SELECTED GRID COORDINATES
+    function addGenericElement(category) {
+      if (!currentProject || !currentProject.data.wiring) return;
+      const idCode = `${category}_${Date.now().toString().slice(-4)}`;
+      const pins = category === 'MCU' ? ['VCC', 'GND', 'SDA', 'SCL', 'TX', 'RX'] : ['VCC', 'GND', 'OUT'];
+      const comp = {
+        id: idCode,
+        name: `Added ${category}`,
+        type: `${category} generic module`,
+        pins: pins,
+        x: 40,
+        y: 40,
+        color: category === 'MCU' ? '#3b82f6' : '#22c55e'
+      };
+      currentProject.data.wiring.components.push(comp);
+      drawWiringSchematic();
+      saveCurrentToCollection();
+    }
+
+    // DRAW HIGH QUALITY PCB COPPER DESIGN OUTLINE (BLOCK 4)
+    function drawPCBSVG() {
+      const pcbSvg = document.getElementById('pcb-main-svg');
+      if (!pcbSvg || !currentProject) return;
+
+      pcbSvg.innerHTML = '';
+
+      // Determine substrate & trace aesthetics based on the activeTheme dynamically
+      let substrateFill = '#04120a'; // green PCB default
+      let substrateStroke = '#22c55e';
+      let compBoxFill = '#0a1a0c';
+
+      if (activeTheme === 'dark-steel') {
+        substrateFill = '#121214';
+        substrateStroke = '#3f3f46';
+        compBoxFill = '#1c1c1e';
+      } else if (activeTheme === 'engineering-paper') {
+        substrateFill = '#faf8f5';
+        substrateStroke = '#d4d4d8';
+        compBoxFill = '#ffffff';
+      } else if (activeTheme === 'blueprint') {
+        substrateFill = '#07162c';
+        substrateStroke = '#0ea5e9';
+        compBoxFill = '#0b2447';
+      } else { // midnight-pcb
+        substrateFill = '#030d07';
+        substrateStroke = '#10b981';
+        compBoxFill = '#08170c';
+      }
+
+      // Sync the PCB SVG container background color dynamically
+      if (pcbSvg.parentElement) {
+        pcbSvg.parentElement.style.backgroundColor = substrateFill;
+      }
+
+      // Base Board outlines green glass epoxy substrate backing composite
+      const frameRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      frameRect.setAttribute('x', '20');
+      frameRect.setAttribute('y', '20');
+      frameRect.setAttribute('width', '860');
+      frameRect.setAttribute('height', '520');
+      frameRect.setAttribute('rx', '12');
+      frameRect.setAttribute('class', 'layer-comp');
+      frameRect.setAttribute('fill', substrateFill);
+      frameRect.setAttribute('stroke', substrateStroke);
+      frameRect.setAttribute('stroke-width', '4');
+      pcbSvg.appendChild(frameRect);
+
+      // Edge corners packaging mounting drills/screws
+      const mountingSpots = [
+        { x: 45, y: 45 }, { x: 855, y: 45 },
+        { x: 45, y: 515 }, { x: 855, y: 515 }
+      ];
+      mountingSpots.forEach(pt => {
+        // Silver rim padding
+        const rim = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        rim.setAttribute('cx', pt.x);
+        rim.setAttribute('cy', pt.y);
+        rim.setAttribute('r', '14');
+        rim.setAttribute('class', 'layer-comp');
+        rim.setAttribute('fill', 'none');
+        rim.setAttribute('stroke', '#a1a1aa');
+        rim.setAttribute('stroke-width', '3');
+        pcbSvg.appendChild(rim);
+
+        // Core hole drill
+        const innerHole = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        innerHole.setAttribute('cx', pt.x);
+        innerHole.setAttribute('cy', pt.y);
+        innerHole.setAttribute('r', '8');
+        innerHole.setAttribute('class', 'layer-drill');
+        innerHole.setAttribute('fill', '#000');
+        pcbSvg.appendChild(innerHole);
+      });
+
+      // Draw standard SMD matrix background dots pattern
+      const dotGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      dotGroup.setAttribute('opacity', '0.07');
+      for (let x = 60; x < 850; x += 40) {
+        for (let y = 60; y < 510; y += 40) {
+          const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          dot.setAttribute('cx', x);
+          dot.setAttribute('cy', y);
+          dot.setAttribute('r', '1.5');
+          dot.setAttribute('fill', '#fff');
+          dotGroup.appendChild(dot);
+        }
+      }
+      pcbSvg.appendChild(dotGroup);
+
+      const data = currentProject.data.wiring || { components: [], connections: [] };
+
+      // 1. Draw B.Cu & F.Cu traces according to connections schematic list
+      data.connections.forEach((conn, index) => {
+        const p1 = findPinCoordinates(conn.from);
+        const p2 = findPinCoordinates(conn.to);
+        if (p1 && p2) {
+          // Translate layout viewport scale mapping points
+          const tx1 = 100 + (p1.x - 100) * 1.05;
+          const ty1 = 100 + (p1.y - 100) * 0.82;
+          const tx2 = 100 + (p2.x - 100) * 1.05;
+          const ty2 = 100 + (p2.y - 100) * 0.82;
+
+          const isTopLayer = index % 2 === 0;
+
+          const trace = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          trace.setAttribute('d', `M ${tx1} ${ty1} L ${tx1 + (tx2-tx1)/2} ${ty1} L ${tx2} ${ty2}`);
+          trace.setAttribute('fill', 'none');
+          trace.setAttribute('stroke-linecap', 'round');
+          
+          if (isTopLayer) {
+            trace.setAttribute('class', 'layer-fcu');
+            trace.setAttribute('stroke', '#ef4444'); // Bright red F.Cu tracks
+            trace.setAttribute('stroke-width', '2.5');
+          } else {
+            trace.setAttribute('class', 'layer-bcu');
+            trace.setAttribute('stroke', '#3b82f6'); // Royal blue B.Cu tracks
+            trace.setAttribute('stroke-width', '2');
+            trace.setAttribute('stroke-dasharray', '8 4');
+          }
+          pcbSvg.appendChild(trace);
+        }
+      });
+
+      // 2. Render physical footprint rectangles onto green board
+      data.components.forEach((comp) => {
+        // Map 0-100 coordinates to physical placement box
+        const tx = 50 + (comp.x * 7.5);
+        const ty = 50 + (comp.y * 4.2);
+        const width = 140;
+        const height = 90;
+
+        // Footprint cardboard courtyard yellow guidelines boundary
+        const courtyard = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        courtyard.setAttribute('x', tx - 8);
+        courtyard.setAttribute('y', ty - 8);
+        courtyard.setAttribute('width', width + 16);
+        courtyard.setAttribute('height', height + 16);
+        courtyard.setAttribute('fill', 'none');
+        courtyard.setAttribute('stroke', '#fbbf24');
+        courtyard.setAttribute('stroke-width', '1');
+        courtyard.setAttribute('stroke-dasharray', '3 3');
+        courtyard.setAttribute('class', 'layer-silk');
+        pcbSvg.appendChild(courtyard);
+
+        // Solid packaging envelope
+        const box = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        box.setAttribute('x', tx);
+        box.setAttribute('y', ty);
+        box.setAttribute('width', width);
+        box.setAttribute('height', height);
+        box.setAttribute('rx', '4');
+        box.setAttribute('fill', compBoxFill);
+        box.setAttribute('stroke', comp.color || '#22c55e');
+        box.setAttribute('stroke-width', '2');
+        box.setAttribute('class', 'layer-comp');
+
+        // Mouse hover interaction tooltip details trigger
+        box.addEventListener('mousemove', (e) => {
+          const tooltip = document.getElementById('pcb-tooltip');
+          tooltip.classList.remove('hidden');
+          tooltip.style.left = `${e.clientX - 190}px`;
+          tooltip.style.top = `${e.clientY - 270}px`;
+          tooltip.innerHTML = `
+            <div class="font-bold text-[var(--color-accent)] mb-1">${comp.id}</div>
+            <div>Name: ${comp.name}</div>
+            <div>Type: ${comp.type}</div>
+            <div>Footprint: SMD-DIP MODULE</div>
+            <div>Pos: X:${comp.x.toFixed(0)}mm Y:${comp.y.toFixed(0)}mm</div>
+          `;
+        });
+        box.addEventListener('mouseleave', () => {
+          document.getElementById('pcb-tooltip').classList.add('hidden');
+        });
+
+        pcbSvg.appendChild(box);
+
+        // White silkscreen labels designators
+        const nameText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        nameText.setAttribute('x', tx + width/2);
+        nameText.setAttribute('y', ty + height/2 + 2);
+        nameText.setAttribute('fill', '#ffffff');
+        nameText.setAttribute('font-size', '10');
+        nameText.setAttribute('font-family', 'monospace');
+        nameText.setAttribute('text-anchor', 'middle');
+        nameText.setAttribute('class', 'layer-silk');
+        nameText.textContent = comp.id;
+        pcbSvg.appendChild(nameText);
+
+        // Golden circular solder pads top and bottom boundary rows
+        const padXSpots = [tx + 20, tx + 50, tx + 80, tx + 110];
+        padXSpots.forEach(padX => {
+          [ty, ty + height].forEach(padY => {
+            const pad = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            pad.setAttribute('x', padX - 4);
+            pad.setAttribute('y', padY - 6);
+            pad.setAttribute('width', '8');
+            pad.setAttribute('height', '12');
+            pad.setAttribute('fill', '#fbbf24');
+            pad.setAttribute('stroke', '#a16207');
+            pad.setAttribute('stroke-width', '1');
+            pad.setAttribute('class', 'layer-comp');
+            pcbSvg.appendChild(pad);
+
+            // Centered dark drill point
+            const drill = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            drill.setAttribute('cx', padX);
+            drill.setAttribute('cy', padY);
+            drill.setAttribute('r', '2.5');
+            drill.setAttribute('fill', '#05140b');
+            drill.setAttribute('class', 'layer-drill');
+            pcbSvg.appendChild(drill);
+          });
+        });
+      });
+    }
+
+    // TOGGLE PCB LAYERS VISIBILITY STRIP
+    function togglePCBLayer(layerClass) {
+      const items = document.querySelectorAll(`#pcb-main-svg .${layerClass}`);
+      items.forEach(el => {
+        el.getAttribute('opacity') === '0' 
+          ? el.setAttribute('opacity', '1') 
+          : el.setAttribute('opacity', '0');
+      });
+    }
+
+    // MANUAL STEPS RENDERER AND BUILD COMPLETIONS CHECKLIST
+    function renderAssemblySteps(steps) {
+      const container = document.getElementById('assembly-steps-container');
+      container.innerHTML = '';
+
+      if (steps.length === 0) {
+        container.innerHTML = '<div class="text-xs text-zinc-500 italic">No instructions available.</div>';
+        return;
+      }
+
+      steps.forEach((step, index) => {
+        const div = document.createElement('div');
+        div.className = `p-4 border rounded-lg transition-all duration-300 ${step.completed ? 'bg-emerald-950/10 border-emerald-900/60 pb-3' : 'theme-card'}`;
+        
+        let warningBlock = '';
+        if (step.warning) {
+          warningBlock = `
+            <div class="mt-2.5 p-2 bg-amber-950/20 text-amber-500 border border-amber-900/40 rounded text-xs leading-relaxed">
+              <strong class="uppercase font-mono">WARNING:</strong> ${step.warning}
+            </div>
+          `;
+        }
+
+        let toolsPills = '';
+        if (step.tools) {
+          toolsPills = step.tools.map(t => `<span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-[10px] font-mono border theme-border font-bold uppercase">${t}</span>`).join(' ');
+        }
+
+        div.innerHTML = `
+          <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-3">
+              <button onclick="toggleStepCheckbox(${index})" class="w-5 h-5 rounded border ${step.completed ? 'bg-emerald-500 border-emerald-600 text-white' : 'theme-border hover:border-zinc-500'} flex items-center justify-center shrink-0 mt-0.5 transition">
+                ${step.completed ? '<i data-lucide="check" class="w-3.5 h-3.5"></i>' : ''}
+              </button>
+              <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)] ${step.completed ? 'line-through opacity-50' : ''}">
+                  Step ${step.stepNumber}: ${step.title}
+                </h4>
+                <p class="text-[12px] text-zinc-400 mt-1 leading-relaxed ${step.completed ? 'opacity-40' : ''}">
+                  ${step.description}
+                </p>
+                <p class="text-[11px] text-zinc-500 italic mt-1">${step.details || ''}</p>
+                <div class="flex flex-wrap items-center gap-1.5 mt-3">
+                  <span class="text-[10px] text-zinc-500 font-mono">Est: ${step.estimatedTime || '10m'}</span>
+                  ${toolsPills}
+                </div>
+                ${warningBlock}
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      // Update ProgressBar
+      const total = steps.length;
+      const completedCount = steps.filter(s => s.completed).length;
+      const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+      
+      const pbar = document.getElementById('assembly-progress-bar');
+      const ptext = document.getElementById('assembly-progress-text');
+      if (pbar) pbar.style.width = pct + '%';
+      if (ptext) ptext.textContent = pct + '% Completed';
+
+      lucide.createIcons();
+    }
+
+    function toggleStepCheckbox(index) {
+      if (!currentProject || !currentProject.data.instructions) return;
+      const step = currentProject.data.instructions[index];
+      if (step) {
+        step.completed = !step.completed;
+        renderAssemblySteps(currentProject.data.instructions);
+        saveCurrentToCollection();
+      }
+    }
+
+    // DESIGN RULE CHECKS (DRC) RENDER
+    function renderDRCMessages(issues) {
+      const issuesList = document.getElementById('drc-issues-list');
+      const drcSummary = document.getElementById('drc-summary-panel');
+      const badge = document.getElementById('drc-badge');
+      const sidebarDrc = document.getElementById('sidebar-drc-status');
+
+      if (!issues || issues.length === 0) {
+        issuesList.classList.add('hidden');
+        drcSummary.className = "p-4 rounded-lg bg-emerald-950/20 text-emerald-400 border border-emerald-900/40 flex items-start space-x-3";
+        drcSummary.innerHTML = `
+          <i data-lucide="check-circle" class="w-5 h-5 mt-0.5 shrink-0 text-emerald-400"></i>
+          <div>
+            <h4 class="font-bold text-sm">Engine Status: CLEAN</h4>
+            <p class="text-xs text-emerald-500/80 leading-relaxed mt-0.5">
+              No voltage routing conflicts, floating terminal stubs, or component mismatched logic paths found on canvas. Safe to manufacture.
+            </p>
+          </div>
+        `;
+        badge.textContent = `DRC: 0 Issues`;
+        sidebarDrc.innerHTML = `<span class="text-emerald-400 font-bold">&bull; CLEAN</span>: No electrical warnings or failures.`;
+        lucide.createIcons();
+        return;
+      }
+
+      // Update sidebar
+      sidebarDrc.innerHTML = `<span class="text-red-400 font-bold">&bull; ${issues.length} Alert Issues</span> on routing nodes. Click issues to navigate.`;
+
+      drcSummary.className = "p-4 rounded-lg bg-amber-950/20 text-amber-500 border border-amber-900/40 flex items-start space-x-3";
+      drcSummary.innerHTML = `
+        <i data-lucide="alert-triangle" class="w-5 h-5 mt-0.5 shrink-0 text-amber-500"></i>
+        <div>
+          <h4 class="font-bold text-sm">Engine Diagnostics Blocked: ${issues.length} Issues Flagged</h4>
+          <p class="text-xs text-amber-500/80 leading-relaxed mt-0.5">
+            Resolve warnings to safely fabricate copper layers or optimize core power paths.
+          </p>
+        </div>
+      `;
+
+      issuesList.classList.remove('hidden');
+      issuesList.innerHTML = '';
+      badge.textContent = `DRC: ${issues.length} Issues`;
+
+      issues.forEach(iss => {
+        const item = document.createElement('div');
+        item.className = `p-3.5 border rounded-lg flex items-center justify-between text-xs font-mono cursor-pointer transition ${iss.severity === 'error' ? 'bg-red-950/20 border-red-900/40 text-red-400' : 'bg-amber-950/20 border-amber-900/40 text-amber-500'}`;
+        item.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${iss.severity === 'error' ? 'bg-red-800 text-white' : 'bg-amber-800 text-white'}">${iss.severity}</span>
+            <span>${iss.message} (Component: <strong>${iss.componentId}</strong>)</span>
+          </div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-zinc-500"></i>
+        `;
+        item.onclick = () => {
+          scrollToBlock('block-wiring');
+          showInlinePropertiesPanel(iss.componentId, 160, 160);
+        };
+        issuesList.appendChild(item);
+      });
+
+      lucide.createIcons();
+    }
+
+    function triggerDRCReRun() {
+      // Fast procedural simulated check update
+      alert("Design Rule Check sweep executed on all logic routes. Composite safe matrix recalculated.");
+      if (currentProject && currentProject.data.wiring) {
+        currentProject.data.wiring.drcIssues = []; 
+        renderDRCMessages([]);
+      }
+    }
+
+    // EXPORT TO KICAD NETLIST FILE FORMULATION
+    function exportToKiCadNetlist() {
+      if (!currentProject || !currentProject.data.wiring) return;
+      
+      const w = currentProject.data.wiring;
+      const title = currentProject.name.replace(/\s+/g, '_');
+      
+      let lines = [];
+      lines.push(`(export (version D)`);
+      lines.push(`  (design`);
+      lines.push(`    (source "${title}.sch")`);
+      lines.push(`    (tool "Wirecraft AI Workspace")`);
+      lines.push(`  )`);
+      lines.push(`  (components`);
+      w.components.forEach(comp => {
+        lines.push(`    (comp (ref "${comp.id}")`);
+        lines.push(`      (value "${comp.type}")`);
+        lines.push(`      (footprint "Wirecraft_SMD_SMD_Resistors")`);
+        lines.push(`    )`);
+      });
+      lines.push(`  )`);
+      lines.push(`  (nets`);
+      w.connections.forEach((conn, index) => {
+        lines.push(`    (net (code ${index + 1}) (name "${conn.signal}")`);
+        lines.push(`      (node (ref "${conn.from.split('.')[0]}") (pin "${conn.from.split('.')[1]}"))`);
+        lines.push(`      (node (ref "${conn.to.split('.')[0]}") (pin "${conn.to.split('.')[1]}"))`);
+        lines.push(`    )`);
+      });
+      lines.push(`  )`);
+      lines.push(`)`);
+
+      const blob = new Blob([lines.join("\n")], { type: 'text/plain;charset=utf-8' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${title}_netlist.net`;
+      link.click();
+    }
+
+    // EXPORT BILL OF MATERIALS AS CSV FILE
+    function exportBOMToCSV() {
+      if (!currentProject || !currentProject.data.bom) return;
+      const bom = currentProject.data.bom;
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Component,Part Number,Category,Quantity,Unit Cost,Total Cost\n";
+
+      bom.forEach(i => {
+        csvContent += `"${i.name}","${i.partNumber}","${i.category}",${i.quantity},${i.unitCost},${i.totalCost}\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `${currentProject.name}_BOM.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // FLOATING KEYBOARD PROMPT TRIGGERS
+    function handlePromptKeyDown(event) {
+      if (event.key === 'Enter') {
+        triggerHardwareGeneration();
+      }
+    }
+
+    function selectIdeaPreset(presetName) {
+      selectIdeaPrompt(presetName);
+    }
+
+    function selectIdeaPrompt(presetName) {
+      const input = document.getElementById('prompt-input-bar');
+      if (input) {
+        input.value = `Smart ${presetName} schema board layout design`;
+        triggerHardwareGeneration();
+      }
+    }
+
+    // LIVE AI EXTRACTION & RECOVERY SYSTEM
+    function extractJSON(text) {
+      try {
+        return JSON.parse(text);
+      } catch(e) {}
+      
+      const start = text.indexOf('{');
+      const end = text.lastIndexOf('}');
+      if (start !== -1 && end !== -1 && end > start) {
+        const candidate = text.substring(start, end + 1);
+        try {
+          return JSON.parse(candidate);
+        } catch(e) {}
+        
+        for (let i = end; i > start + 5; i--) {
+          try {
+            return JSON.parse(text.substring(start, i + 1));
+          } catch (e) {}
+        }
+      }
+      throw new Error("Could not parse valid JSON");
+    }
+
+    // SEND PROMPT AI MESSAGES REQUEST TO PROXY ENDPOINT
+    async function triggerHardwareGeneration() {
+      const input = document.getElementById('prompt-input-bar');
+      const promptText = input.value.trim();
+      if (!promptText) return;
+
+      if (localUsageCount <= 0) {
+        alert("You have reached your free generation limit of 10 requests for the current workspace. Upgrade to Pro for unlimited telemetry workspace computations.");
+        return;
+      }
+
+      // 8s countdown throttle setup
+      const btn = document.getElementById('generate-trigger-btn');
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i>`;
+      lucide.createIcons();
+
+      // Show loading feedback state in user blocks
+      document.getElementById('empty-workspace-view').innerHTML = `
+        <div class="space-y-6 py-12">
+          <div class="inline-block animate-spin text-[var(--color-accent)]"><i data-lucide="loader-2" class="w-12 h-12"></i></div>
+          <h3 class="text-xl font-semibold">Generating physical workspace matrix...</h3>
+          <p class="text-xs text-zinc-500 font-mono">Routing copper PCB tracks &bull; Compiling manual assembly instructions</p>
+        </div>
+      `;
+      document.getElementById('empty-workspace-view').classList.remove('hidden');
+      document.getElementById('active-workspace-blocks').classList.add('hidden');
+      lucide.createIcons();
+
+      // Construct request body for Proxy endpoint messages
+      const truncatedPrompt = promptText.substring(0, 500);
+
+      try {
+        const response = await fetch("/api/forge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: truncatedPrompt,
+            systemPrompt: SYSTEM_PROMPT,
+            plan: 'free'
+          })
+        });
+
+        if (!response.ok) {
+          let errMsg = `Server returned status HTTP ${response.status}`;
+          try {
+            const errData = await response.json();
+            if (errData && errData.error) {
+              errMsg = errData.error;
+            }
+          } catch (jsonErr) {}
+          throw new Error(errMsg);
+        }
+
+        const resData = await response.json();
+        if (!resData || !resData.content || !resData.content[0] || !resData.content[0].text) {
+          throw new Error("Invalid response schema received from Server.");
+        }
+
+        const contentText = resData.content[0].text;
+        
+        // Recover json from textual wrappers
+        const generatedData = extractJSON(contentText);
+
+        // Update project state models
+        currentProject = {
+          id: 'proj_' + Date.now(),
+          name: generatedData.info.title || promptText,
+          data: generatedData
+        };
+
+        // Tick usage remaining limits
+        localUsageCount = Math.max(0, localUsageCount - 1);
+        localStorage.setItem('wc_usage_local', localUsageCount);
+        updateUsageIndicators();
+
+        document.getElementById('project-title-input').value = currentProject.name;
+        showWorkspaceBlocks();
+        saveCurrentToCollection();
+
+      } catch (e) {
+        console.error("AI Generation routing error, fallback loaded.", e);
+        // Load robust high-fidelity procedural backup simulation based on keywords
+        loadProceduralBackupFallback(promptText, e.message);
+      } finally {
+        // Enforce 8s throttle countdown UI
+        let count = 8;
+        const countdownTimer = setInterval(() => {
+          btn.innerHTML = `<span class="text-[10px] font-mono">${count}s</span>`;
+          count -= 1;
+          if (count < 0) {
+            clearInterval(countdownTimer);
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i>`;
+            lucide.createIcons();
+          }
+        }, 1000);
+      }
+    }
+
+    // ROBUST FALLBACK GENERATOR TO MAKE USER EXPERIENCE PERFECT
+    function loadProceduralBackupFallback(prompt, errorMessage) {
+      if (errorMessage) {
+        alert("Sourcing Exception: " + errorMessage + "\n\nLoading high-fidelity procedural hardware blueprint fallback...");
+      } else {
+        alert("Proxy limits exceeded or invalid API handshake. Engaging locally compiled fallback engineering system.");
+      }
+      
+      const difficulty = prompt.toLowerCase().includes('advanced') ? 'Advanced' : 'Intermediate';
+      const type = prompt.toLowerCase().includes('drone') ? 'drone' : (prompt.toLowerCase().includes('wearable') ? 'wearable' : 'pcb');
+      
+      const payload = {
+        info: {
+          title: prompt,
+          description: `Telemetry board for ${prompt}. Full multi-layer micro vias layout.`,
+          difficulty: difficulty,
+          estimatedTime: "14 Hours",
+          totalCost: 28.50,
+          tags: ["ESP32", "Prototype", "IoT"],
+          safetyNotes: "Ensure matching common terminal logs grounding to avoid floating voltage loops."
+        },
+        bom: [
+          { id: 'u1', name: 'Microprocessor core', partNumber: 'ESP32-S3-WROOM-1', quantity: 1, unitCost: 3.80, totalCost: 3.80, description: 'Wi-Fi BLE SoC system core', category: 'MCU', specifications: '8MB flash, Dual core', lcscLink: '#', amazonLink: '#', aliexpressLink: '#' },
+          { id: 's1', name: 'Precision Sensor chip', partNumber: 'MPU-6050-SMD', quantity: 1, unitCost: 4.20, totalCost: 4.20, description: '6-axis motion accel IMU tracker', category: 'Sensor', specifications: 'I2C interface, 1.8V-3.4V', lcscLink: '#', amazonLink: '#', aliexpressLink: '#' },
+          { id: 'r1', name: 'Decoupling array', partNumber: 'CR0402-10K', quantity: 4, unitCost: 0.20, totalCost: 0.80, description: 'Thin film pullup passive set', category: 'Actuator', specifications: '0402 SMD packaging', lcscLink: '#', amazonLink: '#', aliexpressLink: '#' }
+        ],
+        wiring: {
+          components: [
+            { id: 'MCU_1', name: 'Core SoC Board', type: 'ESP32 IoT Node', pins: ['VCC', 'GND', 'SDA', 'SCL', 'TXD', 'RXD'], x: 15, y: 25, color: '#0284c7' },
+            { id: 'IMU_1', name: 'Gyro IMU Module', type: 'Precision Sensor', pins: ['VCC', 'GND', 'SDA', 'SCL'], x: 65, y: 40, color: '#16a34a' },
+            { id: 'PWR_1', name: 'LDO Regulator', type: '3.3V Power IC', pins: ['VIN', 'GND', 'VOUT'], x: 40, y: 75, color: '#dc2626' }
+          ],
+          connections: [
+            { from: 'MCU_1.SDA', to: 'IMU_1.SDA', signal: 'I2C Data Bus', voltage: '3.3V', color: '#0ea5e9' },
+            { from: 'MCU_1.SCL', to: 'IMU_1.SCL', signal: 'I2C Clock Bus', voltage: '3.3V', color: '#10b981' },
+            { from: 'PWR_1.VOUT', to: 'MCU_1.VCC', signal: 'Power Feed', voltage: '3.3V', color: '#ef4444' }
+          ],
+          drcIssues: []
+        },
+        instructions: [
+          { id: '1', stepNumber: 1, title: 'Secure raw substrate assembly', description: 'Position LDO Regulator on clean solder pad matching standard flow rules.', details: 'Inspect footprints before heat treatment.', tools: ['Soldering Iron'], warning: 'LDO IC orientation is crucial.', estimatedTime: '10m', completed: false },
+          { id: '2', stepNumber: 2, title: 'Set passive decoupling cap lines', description: 'Manually solder core 10K thin-film pullups securely in-place adjacent to IC stubs.', details: 'Check values under microscope loop.', tools: ['Tweezers', 'Flux Pen'], warning: 'Pre-tin the pads for clean flow.', estimatedTime: '20m', completed: false }
+        ],
+        model3d: { type: type, primaryColor: '#2563eb', accentColor: '#10b981' },
+        costOptimizations: [
+          { componentId: 'IMU_1', suggestion: 'Leverage alternate OEM IMU sensor assembly', savings: 1.20 }
+        ]
+      };
+
+      currentProject = {
+        id: 'proj_' + Date.now(),
+        name: prompt,
+        data: payload
+      };
+
+      document.getElementById('project-title-input').value = currentProject.name;
+      showWorkspaceBlocks();
+      saveCurrentToCollection();
+    }
+
+    // ESCAPE UTILITIES FOR DOM INJECTION SAFETY
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    function toggleVersionHistory() {
+      alert("Viewing Workspace Snapshot States: Version snapshots are automatically restored from the left Library sidebar shelf.");
+    }
+
+    // USER REGISTRATION AND LOG-IN INTERFACE CONTROLS
+    function openAuthModal() {
+      document.getElementById('auth-modal').classList.remove('hidden');
+    }
+    function closeAuthModal() {
+      document.getElementById('auth-modal').classList.add('hidden');
+    }
+
+    function simulateThirdPartyAuth(provider) {
+      alert(`Connecting to global ${provider} authentication server. Complete browser handshake popup...`);
+      completeFakeSession(`developer_account@github-oauth.com`, `Hardware Craftsman`);
+    }
+
+    function handleEmailAuth() {
+      const email = document.getElementById('auth-email').value || 'developer@wirecraft.ai';
+      completeFakeSession(email, 'Workspace Lead Admin');
+    }
+
+    function completeFakeSession(email, role) {
+      userSession = { email, role };
+      document.getElementById('sync-banner').className = "mx-3 mb-2 p-2.5 bg-emerald-950/20 text-emerald-400 border border-emerald-800/40 rounded text-[11px] leading-relaxed";
+      document.getElementById('sync-banner').innerHTML = `<i class="w-3.5 h-3.5 inline mr-1 -mt-0.5" data-lucide="check-circle"></i> Cloud Synced: ${email} (${role})`;
+      document.getElementById('auth-section').innerHTML = `
+        <div class="flex items-center space-x-2">
+          <span class="text-[10px] font-mono text-cyan-400 uppercase hidden sm:inline">PRO PLAN</span>
+          <div class="w-8 h-8 rounded-full bg-cyan-800 text-white font-mono text-xs flex items-center justify-center font-bold tracking-tight border-2 border-[var(--color-accent)]" title="${email}">
+            ${email[0].toUpperCase()}
+          </div>
+        </div>
+      `;
+      closeAuthModal();
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

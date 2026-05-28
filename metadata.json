@@ -1,0 +1,6 @@
+{
+  "name": "CircuitForge",
+  "description": "AI Hardware Design Website that generates wiring diagrams, bills of material, assembly guides, and mechanical layouts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

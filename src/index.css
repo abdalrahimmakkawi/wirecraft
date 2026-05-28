@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* 4 Distinct Premium Engineering Tool Themes */
+[data-theme="dark-steel"] {
+  --bg-app: #09090b;
+  --bg-surface: #111113;
+  --bg-card: #18181b;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-primary: #fafafa;
+  --text-secondary: #71717a;
+  --color-accent: #0ea5e9;
+  --color-accent-hover: #0284c7;
+  --color-accent-glow: rgba(14, 165, 233, 0.1);
+}
+
+[data-theme="engineering-paper"] {
+  --bg-app: #fdf8f0;
+  --bg-surface: #f5efe4;
+  --bg-card: #ffffff;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --text-primary: #1a2332;
+  --text-secondary: #64748b;
+  --color-accent: #1d4ed8;
+  --color-accent-hover: #1e40af;
+  --color-accent-glow: rgba(29, 78, 216, 0.06);
+}
+
+[data-theme="midnight-pcb"] {
+  --bg-app: #061a0e;
+  --bg-surface: #0a2214;
+  --bg-card: #0f2a1a;
+  --border-color: rgba(34, 197, 94, 0.15);
+  --text-primary: #f0fdf4;
+  --text-secondary: #86efac;
+  --color-accent: #22c55e;
+  --color-accent-hover: #16a34a;
+  --color-accent-glow: rgba(34, 197, 148, 0.1);
+}
+
+[data-theme="blueprint"] {
+  --bg-app: #0a1628;
+  --bg-surface: #0f2040;
+  --bg-card: #142952;
+  --border-color: rgba(6, 182, 212, 0.15);
+  --text-primary: #e0f2fe;
+  --text-secondary: #7dd3fc;
+  --color-accent: #06b6d4;
+  --color-accent-hover: #0891b2;
+  --color-accent-glow: rgba(6, 182, 212, 0.1);
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Crisp Grid Overlay background */
+.engineering-grid {
+  background-size: 20px 20px;
+  background-image: 
+    radial-gradient(circle, var(--border-color) 0.75px, transparent 1px);
+}
+
+/* Theme specific grid overlays */
+[data-theme="engineering-paper"] .engineering-grid {
+  background-color: #fdf8f0 !important;
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(200, 216, 232, 0.4) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(200, 216, 232, 0.4) 1px, transparent 1px) !important;
+}
+
+[data-theme="midnight-pcb"] .engineering-grid {
+  background-color: #061a0e !important;
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(34, 197, 94, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(34, 197, 94, 0.08) 1px, transparent 1px) !important;
+}
+
+[data-theme="blueprint"] .engineering-grid {
+  background-color: #0a1628 !important;
+  background-size: 30px 30px;
+  background-image: 
+    linear-gradient(to right, rgba(6, 182, 212, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(6, 182, 212, 0.08) 1px, transparent 1px) !important;
+}
+
+[data-theme="dark-steel"] .engineering-grid {
+  background-color: #09090b !important;
+  background-size: 20px 20px;
+  background-image: 
+    radial-gradient(circle, var(--border-color) 0.75px, transparent 1px) !important;
+}
+
+/* Clean components for engineering paper inputs */
+[data-theme="engineering-paper"] input, 
+[data-theme="engineering-paper"] select, 
+[data-theme="engineering-paper"] textarea {
+  background-color: #ffffff !important;
+  color: #1a2332 !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
