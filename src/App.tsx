@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Send, Zap, GitBranch, Cpu } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 import { useWirecraft } from './hooks/useWirecraft';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -304,6 +305,7 @@ export default function App() {
         onGitHubAuth={handleGitHubAuth}
         onEmailAuth={handleEmailAuth}
       />
+      <Analytics />
     </div>
   );
 }
