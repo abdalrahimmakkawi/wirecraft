@@ -875,28 +875,6 @@
     // System placeholder configuration for API
     const SYSTEM_PROMPT = `You are a JSON API. Output only raw JSON.`;
 
-    // Debug function to check proxy API status
-    async function debugProxy() {
-      try {
-        const modelsRes = await fetch('https://sz.uyilink.com/v1/models', {
-          headers: { 'x-api-key': 'sk-rJGDGIFoAFrtpMgMHIWBIW71TFuiIqDNhCFU0iRAIjv8q02s' }
-        });
-        console.log('Models status:', modelsRes.status);
-        const models = await modelsRes.json();
-        console.log('Available models:', JSON.stringify(models));
-
-        const balanceRes = await fetch('https://sz.uyilink.com/v1/dashboard/billing/credit_grants', {
-          headers: { 'x-api-key': 'sk-rJGDGIFoAFrtpMgMHIWBIW71TFuiIqDNhCFU0iRAIjv8q02s' }
-        });
-        console.log('Balance status:', balanceRes.status);
-        const balance = await balanceRes.json();
-        console.log('Balance:', JSON.stringify(balance));
-      } catch(e) {
-        console.log('Debug error:', e);
-      }
-    }
-    debugProxy();
-
     // Supabase Placeholder setup
     const SUPABASE_URL = 'YOUR_SUPABASE_URL';
     const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
@@ -2181,7 +2159,6 @@ Return only the JSON object.`
         }
 
         const data = await response.json();
-        console.log('API raw response:', JSON.stringify(data));
 
         const rawText = data?.choices?.[0]?.message?.content?.trim();
         
