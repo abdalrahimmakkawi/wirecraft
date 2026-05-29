@@ -873,36 +873,7 @@
   <!-- WORKSPACE SCRIPTS AND CORE CONTROLLERS -->
   <script>
     // System placeholder configuration for API
-    const SYSTEM_PROMPT = `CRITICAL INSTRUCTION: You are a JSON generation API endpoint. 
-You are NOT an AI assistant. You are NOT in a terminal. You are 
-NOT in an IDE. You have NO tools. You CANNOT run bash commands. 
-You CANNOT read files. You CANNOT list directories.
-
-Your ONLY function is to receive a hardware project description 
-and return a single JSON object.
-
-The FIRST character you output MUST be {
-The LAST character you output MUST be }
-Output NOTHING else. No prose. No markdown. No bash. No apologies.
-No 'let me check'. No code fences. No <br> tags. Just raw JSON.
-
-Here is the exact JSON schema you must fill:
-{
-  "info": { "title": "...", "description": "...", "difficulty": "Beginner|Intermediate|Advanced", "estimatedTime": "...", "totalCost": 0.00, "tags": [], "safetyNotes": "..." },
-  "bom": [ { "id": "...", "name": "...", "partNumber": "...", "quantity": 1, "unitCost": 0.00, "totalCost": 0.00, "description": "...", "category": "MCU|Sensor|Actuator|Display|Power", "specifications": "...", "lcscLink": "...", "amazonLink": "...", "aliexpressLink": "..." } ],
-  "wiring": {
-    "components": [ { "id": "...", "name": "...", "type": "...", "pins": ["GND", "VCC", "SDA", "SCL"], "x": 10, "y": 20, "color": "#ff0000" } ],
-    "connections": [ { "from": "compId.PIN", "to": "compId.PIN", "signal": "I2C SDA", "voltage": "3.3V", "color": "#00ff00" } ],
-    "drcIssues": [ { "severity": "error|warning", "message": "...", "componentId": "..." } ]
-  },
-  "mech": { "components": [], "dimensions": "100mm x 62mm", "notes": "" },
-  "instructions": [ { "id": "1", "stepNumber": 1, "title": "...", "description": "...", "details": "...", "tools": [], "warning": "...", "estimatedTime": "...", "completed": false } ],
-  "model3d": { "type": "robot|drone|handheld|pcb|wearable|vehicle|enclosure", "primaryColor": "#ff0055", "accentColor": "#00d4ff" },
-  "costOptimizations": [ { "componentId": "...", "suggestion": "Swap with generic variant", "savings": 1.50 } ]
-}
-
-REPEAT: Your entire response must be valid JSON starting with { 
-and ending with }. Nothing before it. Nothing after it.`;
+    const SYSTEM_PROMPT = `You are a JSON API. Output only raw JSON.`;
 
     // Supabase Placeholder setup
     const SUPABASE_URL = 'YOUR_SUPABASE_URL';
@@ -2132,6 +2103,20 @@ and ending with }. Nothing before it. Nothing after it.`;
       const truncatedPrompt = promptText.substring(0, 500);
 
       try {
+        const schemaTemplate = {
+          "info": { "title": "...", "description": "...", "difficulty": "Beginner|Intermediate|Advanced", "estimatedTime": "...", "totalCost": 0.00, "tags": [], "safetyNotes": "..." },
+          "bom": [ { "id": "...", "name": "...", "partNumber": "...", "quantity": 1, "unitCost": 0.00, "totalCost": 0.00, "description": "...", "category": "MCU|Sensor|Actuator|Display|Power", "specifications": "...", "lcscLink": "...", "amazonLink": "...", "aliexpressLink": "..." } ],
+          "wiring": {
+            "components": [ { "id": "...", "name": "...", "type": "...", "pins": ["GND", "VCC", "SDA", "SCL"], "x": 10, "y": 20, "color": "#ff0000" } ],
+            "connections": [ { "from": "compId.PIN", "to": "compId.PIN", "signal": "I2C SDA", "voltage": "3.3V", "color": "#00ff00" } ],
+            "drcIssues": [ { "severity": "error|warning", "message": "...", "componentId": "..." } ]
+          },
+          "mech": { "components": [], "dimensions": "100mm x 62mm", "notes": "" },
+          "instructions": [ { "id": "1", "stepNumber": 1, "title": "...", "description": "...", "details": "...", "tools": [], "warning": "...", "estimatedTime": "...", "completed": false } ],
+          "model3d": { "type": "robot|drone|handheld|pcb|wearable|vehicle|enclosure", "primaryColor": "#ff0055", "accentColor": "#00d4ff" },
+          "costOptimizations": [ { "componentId": "...", "suggestion": "Swap with generic variant", "savings": 1.50 } ]
+        };
+
         const response = await fetch('https://sz.uyilink.com/v1/messages', {
           method: 'POST',
           headers: {
@@ -2140,9 +2125,23 @@ and ending with }. Nothing before it. Nothing after it.`;
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'anthropic/claude-opus-4-7',
+            model: 'claude-3-5-sonnet-20241022',
             max_tokens: 6000,
-            messages: [{ role: 'user', content: truncatedPrompt }]
+            system: SYSTEM_PROMPT,
+            messages: [
+              {
+                role: 'user',
+                content: `You must respond with ONLY a JSON object, nothing else.
+No markdown, no prose, no code fences. Start with { end with }.
+
+Project description: ${truncatedPrompt}
+
+Fill this exact schema:
+${JSON.stringify(schemaTemplate)}
+
+Return only the JSON object.`
+              }
+            ]
           })
         });
 
