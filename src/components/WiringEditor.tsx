@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import ReactFlow, {
+import {
+  ReactFlow,
   Background,
   Controls,
   MiniMap,
@@ -10,8 +11,8 @@ import ReactFlow, {
   Edge,
   Node,
   BackgroundVariant,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import { Component, Connection as WireConnection } from '../types';
 
 interface WiringEditorProps {
@@ -20,6 +21,7 @@ interface WiringEditorProps {
   onComponentsChange: (components: Component[]) => void;
   onConnectionsChange: (connections: WireConnection[]) => void;
   theme: string;
+  onExportKiCad?: () => void;
 }
 
 const nodeTypes = {};
@@ -29,7 +31,8 @@ export function WiringEditor({
   connections,
   onComponentsChange,
   onConnectionsChange,
-  theme
+  theme,
+  onExportKiCad
 }: WiringEditorProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -148,6 +151,15 @@ export function WiringEditor({
             + Power
           </button>
         </div>
+        {onExportKiCad && (
+          <button
+            onClick={onExportKiCad}
+            className="px-2.5 py-1 text-[11px] h-7 border rounded hover:bg-zinc-100 dark:hover:bg-zinc-800/40 transition"
+            style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+          >
+            Export .kicad_sch
+          </button>
+        )}
       </div>
 
       <div className="h-[calc(100%-52px)]">
