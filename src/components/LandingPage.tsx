@@ -25,7 +25,7 @@ export function LandingPage() {
   }, []);
 
   const handleStartBuilding = () => {
-    navigate('/');
+    navigate('/app');
   };
 
   return (

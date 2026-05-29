@@ -446,7 +446,7 @@
             <i data-lucide="cpu" class="w-6 h-6"></i>
           </div>
           <div class="space-y-2">
-            <h2 class="text-xl font-medium tracking-tight text-[var(--text-primary)]">No project yet — describe one below</h2>
+            <h2 class="text-xl font-medium tracking-tight text-[var(--text-primary)]">Start a new project</h2>
             <p class="text-[12.5px] text-zinc-500 max-w-sm mx-auto select-none leading-normal">
               Enter component parameters or describe a hardware concept below to generate schematics, PCB copper layout files, and instructions.
             </p>
@@ -455,19 +455,31 @@
           <!-- Prompt Preset Idea chips -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left pt-6 max-w-lg mx-auto">
             <button onclick="selectIdeaPreset('Smart Hydroponics Garden')" class="theme-card pt-4 pb-3.5 px-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 border theme-border transition text-left space-y-1">
-              <span class="font-medium block text-xs text-[var(--text-primary)]">🌿 Smart Hydroponics Garden</span>
+              <div class="flex items-center space-x-2">
+                <i data-lucide="leaf" class="w-4 h-4 text-[var(--text-secondary)]"></i>
+                <span class="font-medium block text-xs text-[var(--text-primary)]">Smart Hydroponics Garden</span>
+              </div>
               <span class="text-zinc-400 text-[11px] block leading-normal">ESP32-based soil micro-feeder and light solenoids.</span>
             </button>
             <button onclick="selectIdeaPreset('Drone Quadcopter Controller')" class="theme-card pt-4 pb-3.5 px-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 border theme-border transition text-left space-y-1">
-              <span class="font-medium block text-xs text-[var(--text-primary)]">🛸 Flight Controller</span>
+              <div class="flex items-center space-x-2">
+                <i data-lucide="navigation" class="w-4 h-4 text-[var(--text-secondary)]"></i>
+                <span class="font-medium block text-xs text-[var(--text-primary)]">Flight Controller</span>
+              </div>
               <span class="text-zinc-400 text-[11px] block leading-normal">STM32 MCU with high-refresh IMU sensor and power bus.</span>
             </button>
             <button onclick="selectIdeaPreset('Handheld Retro Emulator')" class="theme-card pt-4 pb-3.5 px-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 border theme-border transition text-left space-y-1">
-              <span class="font-medium block text-xs text-[var(--text-primary)]">🎮 Handheld Retro Console</span>
+              <div class="flex items-center space-x-2">
+                <i data-lucide="gamepad-2" class="w-4 h-4 text-[var(--text-secondary)]"></i>
+                <span class="font-medium block text-xs text-[var(--text-primary)]">Handheld Retro Console</span>
+              </div>
               <span class="text-zinc-400 text-[11px] block leading-normal">Raspberry Pi CM4 design with analog thumb sticks.</span>
             </button>
             <button onclick="selectIdeaPreset('Biometric Fitness Track-Ring')" class="theme-card pt-4 pb-3.5 px-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 border theme-border transition text-left space-y-1">
-              <span class="font-medium block text-xs text-[var(--text-primary)]">💍 Biometric Tracker Wearable</span>
+              <div class="flex items-center space-x-2">
+                <i data-lucide="activity" class="w-4 h-4 text-[var(--text-secondary)]"></i>
+                <span class="font-medium block text-xs text-[var(--text-primary)]">Biometric Tracker Wearable</span>
+              </div>
               <span class="text-zinc-400 text-[11px] block leading-normal">Ultra miniature BLE ring with optical heart rate system.</span>
             </button>
           </div>
@@ -798,7 +810,7 @@
           <!-- Subtle Helper Strip -->
           <div class="bg-zinc-50 dark:bg-zinc-950/40 px-4 py-2 flex items-center justify-between border-t border-zinc-200 dark:border-zinc-900 border-opacity-70 text-[11px] text-zinc-500 font-sans">
             <div class="flex items-center space-x-1">
-              <span>Hardware Copilot active. Enter parameters above to generate workspace fields.</span>
+              <span>Describe a hardware project above to generate your complete workspace.</span>
             </div>
             <div class="opacity-75">
               Press enter to generate
@@ -863,10 +875,6 @@
       <button onclick="handleEmailAuth()" class="w-full accent-btn p-2 rounded text-xs font-bold tracking-wider hover:bg-opacity-90">
         AUTHORIZE ACCOUNT
       </button>
-
-      <div class="text-[10px] text-zinc-500">
-        Demo Session: Full persistent database local mocks configured.
-      </div>
     </div>
   </div>
 
@@ -1156,7 +1164,9 @@
       renderIsometricSVG(data.model3d || { type: 'pcb', primaryColor: '#2563eb', accentColor: '#0ea5e9' });
 
       // BOM list fill
-      renderBOMTable(data.bom || []);
+      if (data.bom && data.bom.length > 0) {
+        renderBOMTable(data.bom);
+      }
 
       // KiCad Schematic Diagram Node components & Ortho lines
       drawWiringSchematic();

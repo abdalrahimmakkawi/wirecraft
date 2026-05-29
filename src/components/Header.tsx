@@ -1,4 +1,5 @@
 import { Menu, Clock, ShieldCheck, Send } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Theme } from '../types';
 
 interface HeaderProps {
@@ -24,6 +25,8 @@ export function Header({
   userSession,
   onOpenAuth
 }: HeaderProps) {
+  const navigate = useNavigate();
+
   return (
     <header className="h-14 border-b flex items-center justify-between px-5 z-40 backdrop-blur-md" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
       <div className="flex items-center space-x-4">
@@ -35,7 +38,11 @@ export function Header({
           <Menu className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
         </button>
 
-        <div className="flex items-center space-x-2">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center space-x-2 hover:opacity-80 transition duration-150"
+          title="Back to Landing Page"
+        >
           <svg className="w-6 h-6" viewBox="0 0 100 100" fill="none">
             <path d="M20 80h60M30 80l10-30m10-5l25-15" stroke="var(--color-accent)" strokeWidth="6" strokeLinecap="round"/>
             <circle cx="30" cy="80" r="5" fill="var(--color-accent)"/>
@@ -44,7 +51,7 @@ export function Header({
             <path d="M72 25l7 5-5 7" stroke="var(--color-accent)" strokeWidth="4"/>
           </svg>
           <span className="font-semibold text-base tracking-tight" style={{ color: 'var(--text-primary)' }}>Wirecraft</span>
-        </div>
+        </button>
 
         <span className="text-zinc-600 dark:text-zinc-800">/</span>
 
