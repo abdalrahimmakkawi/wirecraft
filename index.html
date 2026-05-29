@@ -873,13 +873,20 @@
   <!-- WORKSPACE SCRIPTS AND CORE CONTROLLERS -->
   <script>
     // System placeholder configuration for API
-    const SYSTEM_PROMPT = `You are a hardware engineering AI. You MUST respond with ONLY a valid JSON object. No markdown. No prose. No explanation. No code fences. No thinking. The very first character of your response must be { and the last must be }. Any response that is not pure JSON will be rejected.
+    const SYSTEM_PROMPT = `CRITICAL INSTRUCTION: You are a JSON generation API endpoint. 
+You are NOT an AI assistant. You are NOT in a terminal. You are 
+NOT in an IDE. You have NO tools. You CANNOT run bash commands. 
+You CANNOT read files. You CANNOT list directories.
 
-You are a professional robotic and industrial hardware circuit engineering generator. 
-Always output clean, standard json with no conversational text, no markdown. 
-BOM count is strictly 5-8 items. Wiring contains 3-6 logical components with relative (x,y) positioning on standard 0-100 schematic grid.
+Your ONLY function is to receive a hardware project description 
+and return a single JSON object.
 
-The output schema must strictly validate as:
+The FIRST character you output MUST be {
+The LAST character you output MUST be }
+Output NOTHING else. No prose. No markdown. No bash. No apologies.
+No 'let me check'. No code fences. No <br> tags. Just raw JSON.
+
+Here is the exact JSON schema you must fill:
 {
   "info": { "title": "...", "description": "...", "difficulty": "Beginner|Intermediate|Advanced", "estimatedTime": "...", "totalCost": 0.00, "tags": [], "safetyNotes": "..." },
   "bom": [ { "id": "...", "name": "...", "partNumber": "...", "quantity": 1, "unitCost": 0.00, "totalCost": 0.00, "description": "...", "category": "MCU|Sensor|Actuator|Display|Power", "specifications": "...", "lcscLink": "...", "amazonLink": "...", "aliexpressLink": "..." } ],
@@ -892,7 +899,10 @@ The output schema must strictly validate as:
   "instructions": [ { "id": "1", "stepNumber": 1, "title": "...", "description": "...", "details": "...", "tools": [], "warning": "...", "estimatedTime": "...", "completed": false } ],
   "model3d": { "type": "robot|drone|handheld|pcb|wearable|vehicle|enclosure", "primaryColor": "#ff0055", "accentColor": "#00d4ff" },
   "costOptimizations": [ { "componentId": "...", "suggestion": "Swap with generic variant", "savings": 1.50 } ]
-}`;
+}
+
+REPEAT: Your entire response must be valid JSON starting with { 
+and ending with }. Nothing before it. Nothing after it.`;
 
     // Supabase Placeholder setup
     const SUPABASE_URL = 'YOUR_SUPABASE_URL';
@@ -2152,10 +2162,11 @@ The output schema must strictly validate as:
         
         // Find the text block specifically, not just content[0]
         const textBlock = data?.content?.find(block => block.type === 'text');
-        const rawText = textBlock?.text;
+        const rawText = textBlock?.text?.trim();
         
-        if (!rawText) {
-          throw new Error('No text content in response');
+        if (!rawText || !rawText.startsWith('{')) {
+          console.error('Model returned non-JSON:', rawText?.slice(0, 200));
+          throw new Error('Model did not return JSON. Raw: ' + rawText?.slice(0, 100));
         }
         
         const result = extractJSON(rawText);
