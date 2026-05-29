@@ -4,19 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wirecraft — AI Hardware Engineering Workspace</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%230ea5e9'/></svg>">
   <script>
-    // Suppress Tailwind CDN warning
-    (function() {
-      const originalWarn = console.warn;
-      console.warn = function(...args) {
-        if (args[0] && args[0].includes && args[0].includes('Tailwind')) return;
-        originalWarn.apply(console, args);
+    (function(){
+      const w = console.warn;
+      console.warn = function(...a) {
+        if (String(a[0]||'').includes('cdn.tailwindcss.com')) return;
+        w(...a);
       };
     })();
   </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* Inter & JetBrains Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -2120,13 +2120,17 @@ The output schema must strictly validate as:
       const truncatedPrompt = promptText.substring(0, 500);
 
       try {
-        const response = await fetch("/api/forge", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const response = await fetch('https://sz.uyilink.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': 'sk-rJGDGIFoAFrtpMgMHIWBIW71TFuiIqDNhCFU0iRAIjv8q02s',
+            'anthropic-version': '2023-06-01'
+          },
           body: JSON.stringify({
-            query: truncatedPrompt,
-            systemPrompt: SYSTEM_PROMPT,
-            plan: 'free'
+            model: 'anthropic/claude-opus-4-7',
+            max_tokens: 3000,
+            messages: [{ role: 'user', content: truncatedPrompt }]
           })
         });
 
